@@ -1,0 +1,140 @@
+﻿@model CinePapo.Models.Review
+@{
+    ViewData["Title"] = "Editar Resenha - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col pb-24 bg-[#0a0a0a]">
+
+    <header class="p-4 border-b border-white/10 flex items-center gap-4 sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md z-50">
+        <a href="javascript:history.back()" class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl"></i>
+        </a>
+        <h1 class="font-display font-bold text-xl">Editar Resenha</h1>
+    </header>
+
+    <div class="p-6">
+        <form action="/Review/Edit" method="post" class="space-y-6">
+            <input type="hidden" name="Id" value="@Model.Id" />
+
+            <!-- Informações do Filme (Fixas para Edição) -->
+            <div class="relative z-40">
+                <label class="block text-sm font-bold text-gray-400 mb-2">Filme avaliado:</label>
+                <div class="flex items-center gap-3 p-4 bg-panel/50 border border-white/5 rounded-2xl">
+                    @if (!string.IsNullOrEmpty(Model.PosterPath))
+                    {
+                        <img src="https://image.tmdb.org/t/p/w200/@Model.PosterPath" class="w-12 h-16 rounded object-cover shadow-lg border border-white/5">
+                    }
+                    else
+                    {
+                        <div class="w-12 h-16 bg-white/5 rounded flex items-center justify-center"><i class="ph ph-film text-gray-500 text-xl"></i></div>
+                    }
+                    <span class="font-bold text-white text-lg">@Model.MovieTitle</span>
+                </div>
+                <input type="hidden" name="MovieId" value="@Model.MovieId" />
+                <input type="hidden" name="MovieTitle" value="@Model.MovieTitle" />
+                <input type="hidden" name="PosterPath" value="@Model.PosterPath" />
+            </div>
+
+            <div class="relative z-30">
+                <label class="block text-sm font-bold text-gray-400 mb-2">Sua nota <span class="text-brand">*</span></label>
+                <div class="flex items-center gap-2" id="starContainer">
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="1"></i>
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="2"></i>
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="3"></i>
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="4"></i>
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="5"></i>
+                </div>
+                <input type="hidden" name="Rating" id="hiddenRating" value="@Model.Rating" />
+            </div>
+
+            <div class="relative z-20">
+                <div class="flex justify-between items-end mb-2">
+                    <label class="block text-sm font-bold text-gray-400">O que você achou? <span class="text-brand">*</span></label>
+                    <span id="charCount" class="text-[10px] text-gray-500">0 caracteres</span>
+                </div>
+
+                <textarea name="Content" id="reviewContent" rows="6"
+                          class="w-full bg-panel border border-white/10 focus:border-brand rounded-2xl p-4 text-white outline-none transition-colors resize-none">@Model.Content</textarea>
+            </div>
+
+            <button type="submit" id="submitBtn" disabled
+                    class="w-full py-4 bg-brand text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2
+                           disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed disabled:shadow-none hover:bg-orange-600 shadow-[0_0_20px_rgba(255,85,0,0.2)]">
+                Salvar Alterações <i class="ph-bold ph-check"></i>
+            </button>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+
+        const reviewContent = document.getElementById("reviewContent");
+        const submitBtn = document.getElementById("submitBtn");
+        const charCount = document.getElementById("charCount");
+        const hiddenRating = document.getElementById("hiddenRating");
+        const stars = document.querySelectorAll("#starContainer i");
+
+        // 1. INICIALIZAÇÃO E PREENCHIMENTO DE DADOS EXISTENTES
+        let currentRating = parseInt(hiddenRating.value) || 0;
+
+        window.onload = function() {
+            highlightStars(currentRating);
+            checkFormValidity();
+        };
+
+        // 2. SISTEMA DE ESTRELAS INTERATIVAS
+        stars.forEach(star => {
+            star.addEventListener("mouseover", function() {
+                const value = this.getAttribute("data-value");
+                highlightStars(value);
+            });
+
+            star.addEventListener("mouseout", function() {
+                highlightStars(currentRating);
+            });
+
+            star.addEventListener("click", function() {
+                currentRating = this.getAttribute("data-value");
+                hiddenRating.value = currentRating;
+                highlightStars(currentRating);
+                checkFormValidity();
+            });
+        });
+
+        function highlightStars(count) {
+            stars.forEach(star => {
+                const starValue = star.getAttribute("data-value");
+                if (starValue <= count) {
+                    star.classList.remove("text-gray-600");
+                    star.classList.add("text-brand");
+                } else {
+                    star.classList.remove("text-brand");
+                    star.classList.add("text-gray-600");
+                }
+            });
+        }
+
+        function checkFormValidity() {
+            const isRatingGiven = parseInt(hiddenRating.value) > 0;
+            const contentText = reviewContent.value.trim();
+            const isContentValid = contentText.length > 0;
+
+            charCount.innerText = `${contentText.length} caracteres`;
+
+            if (isRatingGiven && isContentValid) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove("disabled:bg-gray-700", "disabled:text-gray-500", "disabled:cursor-not-allowed", "disabled:shadow-none");
+                submitBtn.classList.add("hover:bg-orange-600", "shadow-[0_0_20px_rgba(255,85,0,0.2)]");
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add("disabled:bg-gray-700", "disabled:text-gray-500", "disabled:cursor-not-allowed", "disabled:shadow-none");
+                submitBtn.classList.remove("hover:bg-orange-600", "shadow-[0_0_20px_rgba(255,85,0,0.2)]");
+            }
+        }
+
+        reviewContent.addEventListener("input", checkFormValidity);
+
+    </script>
+}

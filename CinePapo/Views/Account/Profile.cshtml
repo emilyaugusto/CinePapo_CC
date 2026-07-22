@@ -1,0 +1,378 @@
+﻿@model CinePapo.Models.User
+@using System.Linq
+@{
+    ViewData["Title"] = "Meu Perfil - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var reviews = ViewBag.Reviews as List<CinePapo.Models.Review>;
+    var currentUser = ViewBag.CurrentUser as CinePapo.Models.User;
+
+    int totalReviews = reviews?.Count ?? 0;
+
+    bool hasCover = !string.IsNullOrEmpty(Model.CoverPhoto) && Model.CoverPhoto != "REMOVE";
+    bool hasAvatar = !string.IsNullOrEmpty(Model.ProfilePicture) && Model.ProfilePicture != "REMOVE";
+}
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col pb-24 bg-[#0a0a0a] transition-colors duration-300" id="profile-main">
+
+    <div class="w-full h-40 md:h-56 relative group bg-[#0f0f0f] border-b border-white/5">
+        @if (hasCover)
+        {
+            <img src="@Model.CoverPhoto" class="w-full h-full object-cover" onerror="this.style.display='none'; document.getElementById('cover-fallback').style.display='flex';">
+            <div id="cover-fallback" class="w-full h-full flex items-center justify-center bg-[#0f0f0f]" style="display: none;">
+                <i class="ph-duotone ph-image text-4xl text-white/5"></i>
+            </div>
+        }
+        else
+        {
+            <div class="w-full h-full flex items-center justify-center bg-[#0f0f0f]">
+                <i class="ph-duotone ph-image text-4xl text-white/5"></i>
+            </div>
+        }
+    </div>
+
+    <div class="px-5 relative">
+        <div class="flex justify-between items-end -mt-12 mb-4">
+
+            <div class="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-[#0a0a0a] bg-panel flex items-center justify-center overflow-hidden z-10" id="profile-avatar-container">
+                @if (hasAvatar)
+                {
+                    <img src="@Model.ProfilePicture" class="w-full h-full object-cover" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+                    <i id="avatar-fallback" class="ph-fill ph-user text-4xl text-gray-500" style="display: none;"></i>
+                }
+                else
+                {
+                    <i class="ph-fill ph-user text-4xl text-gray-500"></i>
+                }
+            </div>
+
+            <div class="flex items-center gap-2 pt-14">
+                @if (ViewBag.IsMyProfile == true)
+                {
+                    <button onclick="openModal('settings-modal')" class="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors text-white" title="Configurações">
+                        <i class="ph-bold ph-gear text-lg"></i>
+                    </button>
+                    <a href="/Account/EditProfile" class="px-6 py-2 bg-brand text-white font-bold rounded-full hover:bg-orange-600 transition-all shadow-[0_0_15px_rgba(255,85,0,0.3)]">
+                        Editar
+                    </a>
+                }
+                else
+                {
+                    <button id="btn-follow-profile" onclick="toggleFollowProfile('@Model.Id')" class="px-6 py-2 rounded-full font-bold transition-all @(ViewBag.IsFollowing == true ? "border border-brand text-brand bg-[#0a0a0a] hover:bg-brand/10" : "bg-brand text-white hover:bg-orange-600 shadow-[0_0_15px_rgba(255,85,0,0.3)]")">
+                        @(ViewBag.IsFollowing == true ? "Seguindo" : "Seguir")
+                    </button>
+                }
+            </div>
+        </div>
+
+        <h1 class="font-display text-2xl md:text-3xl font-black text-white leading-tight" id="txt-name">@Model.Name</h1>
+        <p class="text-gray-400 text-sm mb-2">@@@(Model.Username?.ToLower())</p>
+
+        <p class="text-gray-500 text-xs flex items-center gap-1.5 mb-6 font-medium">
+            <i class="ph-bold ph-calendar-blank"></i> Entrou em @Model.CreatedAt.Year
+        </p>
+
+        <h2 class="text-sm font-bold text-white mb-3" id="title-genres">Gêneros favoritos</h2>
+        <div class="flex flex-wrap gap-2 mb-6">
+            @if (Model.FavoriteGenres != null && Model.FavoriteGenres.Any())
+            {
+                @foreach (var genre in Model.FavoriteGenres)
+                {
+                    <span class="px-4 py-1.5 rounded-full border border-white/10 bg-panel text-xs font-medium text-gray-300 tag-genre">
+                        @genre
+                    </span>
+                }
+            }
+            else
+            {
+                <span class="text-xs text-gray-500 italic">Nenhum gênero selecionado.</span>
+            }
+        </div>
+
+        <div class="flex items-center gap-6 text-sm mb-6">
+            <div class="flex gap-1.5 items-baseline">
+                <span class="font-black text-white text-lg">@totalReviews</span>
+                <span class="text-gray-400 font-medium">Resenhas</span>
+            </div>
+            <div class="flex gap-1.5 items-baseline">
+                <span class="font-black text-white text-lg">@Model.FollowersCount</span>
+                <span class="text-gray-400 font-medium">Seguidores</span>
+            </div>
+            <div class="flex gap-1.5 items-baseline">
+                <span class="font-black text-white text-lg">@Model.FollowingCount</span>
+                <span class="text-gray-400 font-medium">Seguindo</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex border-b border-white/10 mb-6" id="profile-tabs">
+        <button onclick="switchTab('resenhas')" id="tab-resenhas" class="flex-1 flex flex-col items-center justify-center py-3 text-brand relative border-b-2 border-brand transition-colors">
+            <i class="ph-fill ph-article text-2xl mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Resenhas</span>
+        </button>
+        <button onclick="switchTab('visto')" id="tab-visto" class="flex-1 flex flex-col items-center justify-center py-3 text-gray-500 hover:text-white transition-colors border-b-2 border-transparent">
+            <i class="ph ph-eye text-2xl mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Visto</span>
+        </button>
+        <button onclick="switchTab('querover')" id="tab-querover" class="flex-1 flex flex-col items-center justify-center py-3 text-gray-500 hover:text-white transition-colors border-b-2 border-transparent">
+            <i class="ph ph-bookmark-simple text-2xl mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Quero Ver</span>
+        </button>
+        <button onclick="switchTab('favorito')" id="tab-favorito" class="flex-1 flex flex-col items-center justify-center py-3 text-gray-500 hover:text-white transition-colors border-b-2 border-transparent">
+            <i class="ph ph-heart text-2xl mb-1"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Favoritos</span>
+        </button>
+    </div>
+
+    <div class="px-5 pb-8">
+        <div id="content-resenhas" class="tab-content block">
+            @if (reviews != null && reviews.Count > 0)
+            {
+                <div class="space-y-4">
+                    @foreach (var review in reviews)
+                    {
+                        bool isLiked = currentUser != null && review.LikedByUsers != null && review.LikedByUsers.Contains(currentUser.Id);
+
+                        <div class="bg-panel border border-white/5 rounded-2xl p-5 hover:bg-white/5 transition-all shadow-sm relative card-review">
+                            <a href="/Review/Details/@review.Id" class="block mb-4">
+                                <div class="flex gap-4">
+                                    @if (!string.IsNullOrEmpty(review.PosterPath))
+                                    {
+                                        <img src="https://image.tmdb.org/t/p/w200/@review.PosterPath" class="w-20 md:w-24 rounded-xl object-cover border border-white/5">
+                                    }
+                                    <div class="flex flex-col justify-center">
+                                        <h3 class="font-bold text-white text-lg line-clamp-2">@review.MovieTitle</h3>
+                                        <p class="text-sm text-gray-300 mt-2 line-clamp-2 text-content">@review.Content</p>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <div class="flex items-center justify-between w-full border-t border-white/5 pt-4">
+                                <a href="/Review/Details/@review.Id#comments" class="flex items-center gap-1.5 hover:text-brand transition-colors text-gray-500 text-xs font-medium">
+                                    <i class="ph ph-chat-circle text-lg"></i>
+                                    <span>@review.CommentsCount</span>
+                                </a>
+
+                                <button onclick="toggleLike(event, '@review.Id', this)" class="flex items-center gap-1.5 hover:text-red-500 transition-colors cursor-pointer group">
+                                    @if (isLiked)
+                                    {
+                                        <i class="heart-filled ph-fill ph-heart text-red-500 text-lg"></i>
+                                        <i class="heart-outline ph ph-heart text-lg hidden"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="heart-filled ph-fill ph-heart text-red-500 text-lg hidden"></i>
+                                        <i class="heart-outline ph ph-heart text-lg"></i>
+                                    }
+                                    <span class="like-count text-xs font-medium @(isLiked ? "text-red-500" : "")">@review.LikesCount</span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="flex flex-col items-center justify-center py-16 px-4 bg-panel/30 border border-white/5 border-dashed rounded-3xl text-center">
+                    <div class="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center mb-5 border border-brand/20">
+                        <i class="ph-duotone ph-popcorn text-4xl text-brand"></i>
+                    </div>
+                    <h3 class="text-xl md:text-2xl font-bold text-white mb-2 font-display">Nenhuma resenha por aqui</h3>
+                    <p class="text-gray-400 text-sm mb-8 max-w-xs md:max-w-sm leading-relaxed">Ainda não há nenhuma resenha para exibir neste perfil.</p>
+                    @if (ViewBag.IsMyProfile == true)
+                    {
+                        <a href="/Review/Create" class="px-8 py-3.5 bg-brand text-white font-bold rounded-full hover:bg-orange-600 transition-all shadow-[0_0_20px_rgba(255,85,0,0.3)] flex items-center gap-2 group">
+                            Escreva já <i class="ph-bold ph-pencil-simple group-hover:rotate-12 transition-transform"></i>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+
+        <div id="content-visto" class="tab-content hidden">
+            @if (Model.Watched != null && Model.Watched.Any())
+            {
+                <div class="grid grid-cols-3 md:grid-cols-4 gap-4">
+                    @foreach (var m in Model.Watched)
+                    {
+                        <a href="/Home/Details/@m.MovieId" class="group flex flex-col gap-2">
+                            <div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg border border-white/10">
+                                <img src="https://image.tmdb.org/t/p/w300/@m.PosterPath" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://via.placeholder.com/300x450?text=Sem+Capa'">
+                            </div>
+                            <h3 class="font-bold text-xs md:text-sm text-gray-300 line-clamp-2 group-hover:text-brand transition-colors leading-tight">@m.Title</h3>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-center text-gray-500 mt-10">Nenhum filme marcado como visto.</p>
+            }
+        </div>
+
+        <div id="content-querover" class="tab-content hidden">
+            @if (Model.WantToSee != null && Model.WantToSee.Any())
+            {
+                <div class="grid grid-cols-3 md:grid-cols-4 gap-4">
+                    @foreach (var m in Model.WantToSee)
+                    {
+                        <a href="/Home/Details/@m.MovieId" class="group flex flex-col gap-2">
+                            <div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg border border-white/10">
+                                <img src="https://image.tmdb.org/t/p/w300/@m.PosterPath" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://via.placeholder.com/300x450?text=Sem+Capa'">
+                            </div>
+                            <h3 class="font-bold text-xs md:text-sm text-gray-300 line-clamp-2 group-hover:text-brand transition-colors leading-tight">@m.Title</h3>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-center text-gray-500 mt-10">Lista de desejos vazia.</p>
+            }
+        </div>
+
+        <div id="content-favorito" class="tab-content hidden">
+            @if (Model.Favorites != null && Model.Favorites.Any())
+            {
+                <div class="grid grid-cols-3 md:grid-cols-4 gap-4">
+                    @foreach (var m in Model.Favorites)
+                    {
+                        <a href="/Home/Details/@m.MovieId" class="group flex flex-col gap-2">
+                            <div class="relative aspect-[2/3] rounded-xl overflow-hidden shadow-lg border border-white/10">
+                                <div class="absolute top-2 right-2 z-10"><i class="ph-fill ph-heart text-red-500 drop-shadow-md text-lg"></i></div>
+                                <img src="https://image.tmdb.org/t/p/w300/@m.PosterPath" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" onerror="this.src='https://via.placeholder.com/300x450?text=Sem+Capa'">
+                            </div>
+                            <h3 class="font-bold text-xs md:text-sm text-gray-300 line-clamp-2 group-hover:text-brand transition-colors leading-tight">@m.Title</h3>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-center text-gray-500 mt-10">Sem favoritos no momento.</p>
+            }
+        </div>
+    </div>
+</main>
+
+<div id="settings-modal" onclick="closeModal('settings-modal')" class="fixed inset-0 bg-black/70 backdrop-blur-md z-[100] flex items-center justify-center opacity-0 invisible transition-all duration-300 p-4">
+    <div onclick="event.stopPropagation()" class="bg-[#121212] border border-white/10 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl scale-95 transition-transform duration-300 evaluation-panel">
+        <div class="p-6 border-b border-white/5 flex items-center justify-between">
+            <h2 class="font-display font-black text-lg text-white flex items-center gap-2"><i class="ph ph-gear text-brand"></i> Ajustes</h2>
+            <button onclick="closeModal('settings-modal')" class="text-gray-400 hover:text-white"><i class="ph-bold ph-x text-lg"></i></button>
+        </div>
+        <div class="p-5 space-y-4">
+            <a href="/Home/About" class="w-full flex items-center justify-between p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors text-left">
+                <div class="flex items-center gap-3">
+                    <i class="ph-bold ph-info text-xl text-blue-400"></i>
+                    <span class="text-sm font-bold text-gray-200">Sobre o CinePapo</span>
+                </div>
+                <i class="ph ph-caret-right text-gray-500"></i>
+            </a>
+            <a href="/Account/Logout" class="md:hidden w-full flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors text-left text-gray-300">
+                <div class="flex items-center gap-3">
+                    <i class="ph-bold ph-sign-out text-xl"></i>
+                    <span class="text-sm font-bold">Sair da Sessão</span>
+                </div>
+                <i class="ph ph-caret-right opacity-50"></i>
+            </a>
+            <hr class="border-white/5 my-2">
+            <button onclick="openModal('delete-confirm-modal'); closeModal('settings-modal');" class="w-full flex items-center justify-between p-3 bg-red-500/10 border border-red-500/20 rounded-2xl hover:bg-red-500/20 transition-colors text-left text-red-500">
+                <div class="flex items-center gap-3">
+                    <i class="ph-bold ph-warning text-xl"></i>
+                    <span class="text-sm font-bold">Excluir minha conta</span>
+                </div>
+                <i class="ph ph-caret-right opacity-50"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="delete-confirm-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[110] flex items-center justify-center opacity-0 invisible transition-all duration-300 p-4">
+    <div class="bg-[#121212] border border-red-500/30 w-full max-w-xs rounded-3xl p-6 text-center shadow-2xl scale-95 transition-transform duration-300">
+        <div class="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+            <i class="ph-bold ph-warning text-2xl text-red-500"></i>
+        </div>
+        <h3 class="font-display font-black text-white text-lg mb-2">Ação Irreversível!</h3>
+        <p class="text-xs text-gray-400 leading-relaxed mb-6">Tem certeza absoluta? Suas resenhas, curtidas e listas serão apagadas para sempre do CinePapo.</p>
+        <div class="flex flex-col gap-2">
+            <form action="/Account/DeleteAccount" method="post">
+                <button type="submit" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl shadow-lg transition-colors">
+                    Sim, excluir para sempre
+                </button>
+            </form>
+            <button onclick="closeModal('delete-confirm-modal')" class="w-full py-3 bg-white/5 hover:bg-white/10 text-gray-300 font-bold text-sm rounded-xl transition-colors">
+                Cancelar e Voltar
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('opacity-0', 'invisible');
+            modal.querySelector('.bg-[#121212]').classList.remove('scale-95');
+            modal.querySelector('.bg-[#121212]').classList.add('scale-100');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0', 'invisible');
+            modal.querySelector('.bg-[#121212]').classList.remove('scale-100');
+            modal.querySelector('.bg-[#121212]').classList.add('scale-95');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => { el.classList.remove('block'); el.classList.add('hidden'); });
+            document.querySelectorAll('#profile-tabs button').forEach(btn => {
+                btn.className = "flex-1 flex flex-col items-center justify-center py-3 text-gray-500 hover:text-white transition-colors border-b-2 border-transparent";
+                if(btn.querySelector('i')) { btn.querySelector('i').classList.remove('ph-fill'); btn.querySelector('i').classList.add('ph'); }
+            });
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+            document.getElementById('content-' + tabName).classList.add('block');
+            const activeBtn = document.getElementById('tab-' + tabName);
+            activeBtn.className = "flex-1 flex flex-col items-center justify-center py-3 text-brand relative border-b-2 border-brand transition-colors";
+            if(activeBtn.querySelector('i')) { activeBtn.querySelector('i').classList.remove('ph'); activeBtn.querySelector('i').classList.add('ph-fill'); }
+        }
+
+        async function toggleFollowProfile(targetId) {
+            try {
+                const formData = new FormData();
+                formData.append('targetUserId', targetId);
+                const response = await fetch('/Account/ToggleFollow', { method: 'POST', body: formData });
+                const result = await response.json();
+                if (result.success) {
+                    const btn = document.getElementById('btn-follow-profile');
+                    if (result.isFollowing) {
+                        btn.className = "px-6 py-2 rounded-full font-bold transition-all border border-brand text-brand bg-[#0a0a0a] hover:bg-brand/10";
+                        btn.innerText = "Seguindo";
+                    } else {
+                        btn.className = "px-6 py-2 rounded-full font-bold transition-all bg-brand text-white hover:bg-orange-600 shadow-[0_0_15px_rgba(255,85,0,0.3)]";
+                        btn.innerText = "Seguir";
+                    }
+                }
+            } catch(e) { console.error("Erro", e); }
+        }
+
+        async function toggleLike(event, reviewId, element) {
+            event.preventDefault(); event.stopPropagation();
+            try {
+                const response = await fetch('/Review/ToggleLike', { method: 'POST', body: new URLSearchParams({ 'reviewId': reviewId }) });
+                const result = await response.json();
+                if (result.success) {
+                    const heartOutline = element.querySelector('.heart-outline');
+                    const heartFilled = element.querySelector('.heart-filled');
+                    const countSpan = element.querySelector('.like-count');
+                    if (result.isLiked) {
+                        heartOutline.classList.add('hidden'); heartFilled.classList.remove('hidden'); countSpan.classList.add('text-red-500');
+                    } else {
+                        heartOutline.classList.remove('hidden'); heartFilled.classList.add('hidden'); countSpan.classList.remove('text-red-500');
+                    }
+                    countSpan.innerText = result.likesCount;
+                }
+            } catch (e) { console.error(e); }
+        }
+    </script>
+}

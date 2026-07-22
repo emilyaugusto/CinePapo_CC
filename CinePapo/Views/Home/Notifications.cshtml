@@ -1,0 +1,209 @@
+﻿@model List<CinePapo.Models.Notification>
+@{
+    ViewData["Title"] = "Notificações - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var triggerUsers = ViewBag.TriggerUsers as Dictionary<string, string> ?? new Dictionary<string, string>();
+}
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col pb-24 bg-[#0a0a0a]">
+
+    <header class="p-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md z-50">
+        <div class="flex items-center gap-4">
+            <a href="javascript:history.back()" class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+                <i class="ph-bold ph-arrow-left text-xl"></i>
+            </a>
+            <h1 class="text-2xl font-black font-display text-white tracking-tight">Notificações</h1>
+        </div>
+
+        @if (Model != null && Model.Any(n => !n.IsRead))
+        {
+            <button id="markAllAsReadBtn" class="w-10 h-10 rounded-full hover:bg-brand/10 flex items-center justify-center transition-colors group" title="Marcar tudo como lido">
+                <i class="ph-bold ph-check-double text-xl text-brand group-hover:scale-110 transition-transform"></i>
+            </button>
+        }
+    </header>
+
+    <div class="p-4 md:p-6" id="notifications-container">
+        @if (Model != null && Model.Any())
+        {
+            <div class="space-y-3">
+                @foreach (var notification in Model)
+                {
+                    <div class="notification-card relative bg-panel/30 border rounded-2xl p-4 transition-all duration-300 flex items-start gap-4 @(notification.IsRead ? "border-white/5 opacity-70" : "border-brand/30 shadow-[0_0_15px_rgba(255,85,0,0.05)] bg-brand/5")">
+
+                        @if (!notification.IsRead)
+                        {
+                            <span class="orange-dot absolute -top-1 -right-1 w-3 h-3 bg-brand rounded-full shadow-[0_0_8px_rgba(255,85,0,0.8)]"></span>
+                        }
+
+                        <a href="/Account/Profile?id=@notification.TriggeredByUserId" class="shrink-0 relative z-10 block hover:scale-105 transition-transform">
+                            @if (!string.IsNullOrEmpty(notification.TriggeredByUserId) && triggerUsers.ContainsKey(notification.TriggeredByUserId) && !string.IsNullOrEmpty(triggerUsers[notification.TriggeredByUserId]))
+                            {
+                                <img src="@triggerUsers[notification.TriggeredByUserId]" class="w-12 h-12 rounded-full object-cover border border-white/10">
+                            }
+                            else
+                            {
+                                <div class="w-12 h-12 rounded-full bg-brand flex items-center justify-center border border-white/10 text-white font-bold text-lg uppercase font-display">
+                                    @(string.IsNullOrEmpty(notification.TriggeredByUsername) ? "U" : notification.TriggeredByUsername.Substring(0, 1))
+                                </div>
+                            }
+
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#121212] bg-white">
+                                @if (notification.Type == "Follow")
+                                {
+                                    <i class="ph-fill ph-user-plus text-[10px] text-blue-500"></i>
+                                }
+                                else if (notification.Type == "Like")
+                                {
+                                    <i class="ph-fill ph-heart text-[10px] text-red-500"></i>
+                                }
+                                else
+                                {
+                                    <i class="ph-fill ph-chat-circle text-[10px] text-brand"></i>
+                                }
+                            </div>
+                        </a>
+
+                        <div class="flex-1 min-w-0 pr-16">
+                            <a href="@notification.Link" class="block group">
+                                <p class="text-sm md:text-base leading-tight mb-1 notification-text @(notification.IsRead ? "text-gray-400" : "text-white font-medium")">
+                                    @Html.Raw(notification.Message)
+                                </p>
+                                <span class="notification-time text-[11px] font-bold uppercase tracking-wider @(notification.IsRead ? "text-gray-600" : "text-brand")">
+                                    @{
+                                        var diff = DateTime.UtcNow - notification.CreatedAt;
+                                        if (diff.TotalMinutes < 60)
+                                        {
+                                            <span>@((int)diff.TotalMinutes)m atrás</span>
+                                        }
+                                        else if (diff.TotalHours < 24)
+                                        {
+                                            <span>@((int)diff.TotalHours)h atrás</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@notification.CreatedAt.ToString("dd MMM")</span>
+                                        }
+                                    }
+                                </span>
+                            </a>
+                        </div>
+
+                        <div class="absolute top-3 right-3 flex items-center gap-1 z-20">
+                            @if (!notification.IsRead)
+                            {
+                                <button onclick="markAsRead('@notification.Id', this)" class="btn-read w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-brand hover:bg-brand/10 transition-colors" title="Marcar como lida">
+                                    <i class="ph-bold ph-check text-lg"></i>
+                                </button>
+                            }
+                            <button onclick="deleteNotification('@notification.Id', this)" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-colors" title="Apagar notificação">
+                                <i class="ph-bold ph-trash text-lg"></i>
+                            </button>
+                        </div>
+
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="bg-panel/20 border border-white/5 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center mt-4">
+                <div class="w-20 h-20 bg-brand/10 rounded-full flex items-center justify-center mb-5 border border-brand/20">
+                    <i class="ph-duotone ph-bell-ringing text-4xl text-brand"></i>
+                </div>
+                <h3 class="font-display font-black text-white text-xl mb-2">Tudo tranquilo!</h3>
+                <p class="text-sm text-gray-400 leading-relaxed max-w-[250px] mx-auto">Sua caixa de entrada está limpa. Interaja com a comunidade para receber novidades.</p>
+            </div>
+        }
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        // FUNÇÃO PARA MARCAR COMO LIDO
+        async function markAsRead(notificationId, buttonElement) {
+            try {
+                const formData = new FormData();
+                formData.append("id", notificationId);
+
+                const response = await fetch("/Home/MarkNotificationAsRead", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const card = buttonElement.closest(".notification-card");
+
+                    card.classList.remove("border-brand/30", "shadow-[0_0_15px_rgba(255,85,0,0.05)]", "bg-brand/5");
+                    card.classList.add("border-white/5", "opacity-70");
+
+                    const textP = card.querySelector(".notification-text");
+                    textP.classList.remove("text-white", "font-medium");
+                    textP.classList.add("text-gray-400");
+
+                    const timeSpan = card.querySelector(".notification-time");
+                    if (timeSpan) {
+                        timeSpan.classList.remove("text-brand");
+                        timeSpan.classList.add("text-gray-600");
+                    }
+
+                    const orangeDot = card.querySelector(".orange-dot");
+                    if (orangeDot) orangeDot.remove();
+                    buttonElement.remove();
+                }
+            } catch (error) {
+                console.error("Erro ao marcar como lida:", error);
+            }
+        }
+
+        // FUNÇÃO PARA APAGAR NOTIFICAÇÃO
+        async function deleteNotification(notificationId, buttonElement) {
+            if (!confirm("Tem certeza que deseja apagar esta notificação?")) return;
+
+            try {
+                const formData = new FormData();
+                formData.append("id", notificationId);
+
+                const response = await fetch("/Home/DeleteNotification", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const card = buttonElement.closest(".notification-card");
+
+                    card.style.transform = "scale(0.95)";
+                    card.style.opacity = "0";
+
+                    setTimeout(() => {
+                        card.remove();
+
+                        if (document.querySelectorAll('.notification-card').length === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+                }
+            } catch (error) {
+                console.error("Erro ao apagar notificação:", error);
+            }
+        }
+
+        document.getElementById("markAllAsReadBtn")?.addEventListener("click", async function () {
+            if (!confirm("Tem certeza que deseja marcar todas como lidas?")) return;
+
+            try {
+                const response = await fetch("/Home/MarkAllNotificationsAsRead", { method: "POST" });
+                const result = await response.json();
+                if (result.success) {
+                    location.reload();
+                }
+            } catch (error) {
+                console.error("Erro ao marcar todas como lidas:", error);
+            }
+        });
+    </script>
+}

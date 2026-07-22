@@ -1,0 +1,359 @@
+﻿@model CinePapo.Models.TmdbMovie
+@{
+    ViewData["Title"] = Model.Title + " - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int hours = (Model.Runtime ?? 0) / 60;
+    int minutes = (Model.Runtime ?? 0) % 60;
+    string formattedRuntime = hours > 0 ? $"{hours}h {minutes}m" : $"{minutes}m";
+    string year = !string.IsNullOrEmpty(Model.ReleaseDate) ? Model.ReleaseDate.Split("-")[0] : "N/A";
+
+    // Normaliza a nota do TMDB (0-10) para a escala de 0-5 estrelas
+    double normalizedTmdbRating = (Model.VoteAverage ?? 0) / 2.0;
+    string tmdbRatingDisplay = Model.VoteAverage.HasValue ? Model.VoteAverage.Value.ToString("0.0").Replace(",", ".") : "0.0";
+
+    bool isWatched = ViewBag.IsWatched == true;
+    bool isWantToSee = ViewBag.IsWantToSee == true;
+    bool isFavorite = ViewBag.IsFavorite == true;
+}
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col pb-24 relative bg-[#0a0a0a]">
+
+    <div class="relative w-full h-64 md:h-80">
+        @if (!string.IsNullOrEmpty(Model.BackdropPath))
+        {
+            <img src="https://image.tmdb.org/t/p/original/@Model.BackdropPath" class="w-full h-full object-cover opacity-80">
+        }
+        else
+        {
+            <div class="w-full h-full bg-panel"></div>
+        }
+        <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-[#0a0a0a]"></div>
+        <a href="javascript:history.back()" class="absolute top-4 left-4 w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition z-50">
+            <i class="ph-bold ph-caret-left text-xl"></i>
+        </a>
+    </div>
+
+    <div class="px-5 md:px-8 relative -mt-24 md:-mt-32 z-10">
+
+        <!-- SEÇÃO DE DETALHES DO FILME -->
+        <section class="mb-10">
+            <div class="flex gap-4 items-end mb-6">
+                @if (!string.IsNullOrEmpty(Model.PosterPath))
+                {
+                    <img src="https://image.tmdb.org/t/p/w300/@Model.PosterPath" class="w-28 md:w-36 aspect-[2/3] rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/10 object-cover shrink-0">
+                }
+
+                <div class="pb-1 flex-1 min-w-0">
+                    <h1 class="text-2xl md:text-3xl font-display font-bold text-white mb-2 leading-tight drop-shadow-md">@Model.Title</h1>
+
+                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                        <span class="px-2.5 py-1 bg-white/10 backdrop-blur-sm rounded-md text-[10px] font-bold text-white tracking-wider">@year</span>
+                        <span class="px-2.5 py-1 bg-white/10 backdrop-blur-sm rounded-md text-[10px] font-bold text-white tracking-wider">@formattedRuntime</span>
+
+                        <!-- Exibição da nota do TMDB (normalizada para 5 estrelas + valor original) -->
+                        <div class="flex items-center gap-1 px-2.5 py-1 bg-brand/20 border border-brand/30 rounded-md text-[10px] font-bold text-brand">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= normalizedTmdbRating)
+                                {
+                                    <i class="ph-fill ph-star"></i>
+                                }
+                                else if (i - 0.5 <= normalizedTmdbRating)
+                                {
+                                    <i class="ph-fill ph-star-half"></i>
+                                }
+                                else
+                                {
+                                    <i class="ph ph-star text-gray-600"></i>
+                                }
+                            }
+                            <span class="ml-1">@tmdbRatingDisplay/10</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 gap-2.5 mb-8">
+                <button id="btn-visto" onclick="salvarAcao('visto')" class="flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl border transition-all group @(isWatched ? "bg-brand/20 border-brand/50 text-brand shadow-sm shadow-brand/10" : "bg-panel border-white/5 text-gray-400 hover:bg-white/5 hover:border-white/10 hover:text-white")">
+                    <i id="icon-visto" class="@(isWatched ? "ph-fill" : "ph") ph-eye text-lg transition-colors"></i>
+                    <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider">Visto</span>
+                </button>
+
+                <button id="btn-querover" onclick="salvarAcao('querover')" class="flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl border transition-all group @(isWantToSee ? "bg-brand/20 border-brand/50 text-brand shadow-sm shadow-brand/10" : "bg-panel border-white/5 text-gray-400 hover:bg-white/5 hover:border-white/10 hover:text-white")">
+                    <i id="icon-querover" class="@(isWantToSee ? "ph-fill" : "ph") ph-bookmark-simple text-lg transition-colors"></i>
+                    <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider">Quero Ver</span>
+                </button>
+
+                <button id="btn-favorito" onclick="salvarAcao('favorito')" class="flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl border transition-all group @(isFavorite ? "bg-red-500/20 border-red-500/50 text-red-500 shadow-sm shadow-red-500/10" : "bg-panel border-white/5 text-gray-400 hover:bg-white/5 hover:border-white/10 hover:text-red-500")">
+                    <i id="icon-favorito" class="@(isFavorite ? "ph-fill text-red-500" : "ph") ph-heart text-lg transition-colors group-hover:scale-110"></i>
+                    <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider">Favorito</span>
+                </button>
+
+                <a href="/Review/Create?movieId=@Model.Id&movieTitle=@Uri.EscapeDataString(Model.Title)&posterPath=@Model.PosterPath" class="flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl border transition-all group bg-panel border-white/5 text-gray-400 hover:bg-white/5 hover:border-white/10 hover:text-brand cursor-pointer">
+                    <i class="ph ph-pencil-simple text-lg transition-colors group-hover:text-brand"></i>
+                    <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider">Avaliar</span>
+                </a>
+            </div>
+
+            <div class="mb-10">
+                <h2 class="font-bold text-base text-white mb-2 flex items-center gap-1.5"><i class="ph-fill ph-info text-brand"></i> Sobre o filme</h2>
+
+                <div class="relative mb-4">
+                    <p id="sinopse-text" class="text-sm text-gray-300 leading-relaxed line-clamp-3 transition-all duration-300">
+                        @(string.IsNullOrEmpty(Model.Overview) ? "Sinopse não disponível para este filme no TMDB." : Model.Overview)
+                    </p>
+                    @if (!string.IsNullOrEmpty(Model.Overview) && Model.Overview.Length > 180)
+                    {
+                        <button onclick="toggleSinopse(this)" class="text-brand font-bold text-xs mt-1 hover:underline">Ler mais</button>
+                    }
+                </div>
+
+                <!-- DADOS TÉCNICOS (Extraídos diretamente do Model atualizado) -->
+                <div class="bg-white/5 rounded-xl p-3.5 flex flex-col gap-2 border border-white/5 text-xs">
+                    @{
+                        // 1. Extrai o nome do diretor da lista de Equipe (Crew) onde o Job for "Director"
+                        var director = Model.Credits?.Crew?.FirstOrDefault(c => c.Job == "Director")?.Name;
+
+                        // 2. Extrai apenas os nomes dos 4 primeiros atores do Elenco (Cast)
+                        var cast = Model.Credits?.Cast?.Select(c => c.Name).Take(4).ToList();
+
+                        // 3. Extrai a lista de nomes dos gêneros
+                        var genres = Model.Genres?.Select(g => g.Name).ToList();
+                    }
+
+                    @if (!string.IsNullOrEmpty(director))
+                    {
+                        <p class="text-gray-400"><strong class="text-white font-medium">Direção:</strong> @director</p>
+                    }
+
+                    @if (cast != null && cast.Any())
+                    {
+                        <p class="text-gray-400"><strong class="text-white font-medium">Elenco:</strong> @string.Join(", ", cast)</p>
+                    }
+
+                    @if (genres != null && genres.Any())
+                    {
+                        <p class="text-gray-400"><strong class="text-white font-medium">Gêneros:</strong> @string.Join(", ", genres)</p>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- SEÇÃO DE RESENHAS -->
+        <section>
+            @{
+                var initialReviews = ViewBag.MovieReviews as List<CinePapo.Models.Review>;
+                var reviewAuthors = ViewBag.ReviewAuthors as List<CinePapo.Models.User>;
+                var currentUser = ViewBag.CurrentUser as CinePapo.Models.User;
+                string googleId = ViewBag.GoogleId;
+            }
+
+            <h2 class="font-bold text-base text-white flex items-center gap-2 mb-4">
+                <i class="ph-fill ph-chats text-brand text-lg"></i> Resenhas
+            </h2>
+
+            @if (initialReviews != null && initialReviews.Any())
+            {
+                <div id="reviews-container" class="space-y-4">
+                    @foreach (var review in initialReviews)
+                    {
+                        var author = reviewAuthors?.FirstOrDefault(a => a.Id == review.UserId);
+                        bool isLiked = currentUser != null && review.LikedByUsers != null &&
+                        (review.LikedByUsers.Contains(currentUser.Id) || (googleId != null && review.LikedByUsers.Contains(googleId)));
+
+                        <div class="bg-panel/40 border border-white/5 rounded-xl p-4 transition-colors hover:border-white/10 group">
+                            <div class="flex justify-between items-start mb-3">
+                                <a href="/Account/Profile?id=@author?.Id" class="flex items-center gap-3 z-10 relative min-w-0 flex-1">
+                                    @if (!string.IsNullOrEmpty(author?.ProfilePicture))
+                                    {
+                                        <img src="@author.ProfilePicture" class="w-10 h-10 rounded-full object-cover border border-white/10">
+                                    }
+                                    else
+                                    {
+                                        <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center border border-brand/20">
+                                            <i class="ph-fill ph-user text-brand"></i>
+                                        </div>
+                                    }
+                                    <div class="truncate pr-2">
+                                        <h3 class="font-bold text-white text-sm group-hover:text-brand transition-colors truncate">@(author?.Name ?? "Usuário")</h3>
+                                        <p class="text-[10px] text-gray-500">@@@(author?.Username?.ToLower() ?? "usuario") • @review.CreatedAt.ToString("dd MMM yyyy")</p>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <a href="/Review/Details/@review.Id" class="block cursor-pointer">
+                                <div class="flex gap-0.5 text-brand text-xs mb-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        if (i <= review.Rating)
+                                        {
+                                            <i class="ph-fill ph-star"></i>
+                                        }
+                                        else if (i - 0.5 <= review.Rating)
+                                        {
+
+                                            <i class="ph-fill ph-star-half"></i>
+                                        }
+                                        else
+                                        {
+
+                                            <i class="ph ph-star text-gray-600"></i>
+                                        }
+                                    }
+                                </div>
+                                <p class="text-sm text-gray-300 leading-relaxed line-clamp-3 mb-3">@review.Content</p>
+                            </a>
+
+                            <div class="flex items-center justify-between text-gray-500 pt-3 border-t border-white/5 relative z-10">
+                                <!-- Comentários -->
+                                <a href="/Review/Details/@review.Id#comments" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group/chat">
+                                    <i class="ph ph-chat-circle text-lg group-hover/chat:text-brand transition-colors"></i>
+                                    <span class="text-xs font-medium">@review.CommentsCount</span>
+                                </a>
+
+                                <!-- Curtidas -->
+                                <button onclick="toggleLike(event, '@review.Id', this)" class="flex items-center gap-1.5 hover:text-red-500 transition-colors cursor-pointer group/like">
+                                    <i class="@(isLiked ? "ph-fill text-red-500" : "ph") ph-heart text-lg group-hover/like:text-red-500 transition-colors"></i>
+                                    <span class="text-xs font-medium like-count @(isLiked ? "text-red-500" : "")">@review.LikesCount</span>
+                                </button>
+                            </div>
+
+                        </div>
+                    }
+                </div>
+
+                @if (ViewBag.TotalReviews > 3)
+                {
+                    <button id="btn-load-more" onclick="loadMoreReviews()" class="w-full mt-4 py-3 bg-panel border border-white/5 rounded-xl text-brand font-bold text-xs hover:bg-white/5 transition-colors flex items-center justify-center gap-2">
+                        Carregar mais resenhas <i class="ph-bold ph-caret-down"></i>
+                    </button>
+                }
+            }
+            else
+            {
+                <div class="bg-panel/20 border border-white/5 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center mt-2">
+                    <div class="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4">
+                        <i class="ph-duotone ph-popcorn text-3xl text-brand"></i>
+                    </div>
+                    <h3 class="font-bold text-white text-base mb-1">Seja o primeiro a avaliar!</h3>
+                    <p class="text-xs text-gray-500 mb-5 max-w-[250px] mx-auto">Ninguém da comunidade escreveu sobre este filme ainda. Que tal quebrar o gelo?</p>
+                    <a href="/Review/Create?movieId=@Model.Id&movieTitle=@Uri.EscapeDataString(Model.Title)&posterPath=@Model.PosterPath" class="px-6 py-2.5 bg-brand text-white text-xs uppercase tracking-wider font-bold rounded-full hover:bg-orange-600 transition-colors shadow-lg shadow-brand/20 flex items-center gap-2">
+                        <i class="ph-bold ph-pencil-simple text-sm"></i> Escrever Resenha
+                    </a>
+                </div>
+            }
+        </section>
+    </div>
+
+    <div id="toastAction" class="fixed top-6 right-6 transform translate-x-full opacity-0 bg-panel border border-white/10 border-b-4 border-brand p-4 rounded-xl shadow-2xl z-[100] flex items-center gap-3 transition-all duration-300">
+        <i class="ph-fill ph-check-circle text-2xl text-brand"></i>
+        <p id="toastMessage" class="text-sm font-medium text-white"></p>
+    </div>
+
+@section Scripts {
+        <script>
+            // --- EXPANDIR SINOPSE ---
+            function toggleSinopse(btn) {
+                const p = document.getElementById("sinopse-text");
+                p.classList.toggle("line-clamp-3");
+                btn.innerText = btn.innerText === "Ler mais" ? "Mostrar menos" : "Ler mais";
+            }
+
+            // --- AÇÕES GERAIS (SALVAR, TOAST, CURTIR, SEGUIR) ---
+            async function salvarAcao(acao) {
+                const formData = new FormData();
+                formData.append("movieId", "@Model.Id");
+
+                 formData.append("title", @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Title)));
+
+                formData.append("poster", "@(Model.PosterPath ?? "")");
+
+                formData.append("actionType", acao);
+
+                try {
+                    const response = await fetch("/Home/ToggleMovieAction", { method: "POST", body: formData });
+                    const result = await response.json();
+                    if(result.success) {
+                        mostrarToast(result.message);
+                        atualizarVisualDoBotao(acao, result.isAdded);
+                    } else {
+                        mostrarToast("Ops! " + result.message);
+                    }
+                } catch(e) {
+                    mostrarToast("Erro ao processar sua ação.");
+                    console.error(e);
+                }
+            }
+
+            function atualizarVisualDoBotao(acao, isAdded) {
+                const btn = document.getElementById(`btn-${acao}`);
+                const icon = document.getElementById(`icon-${acao}`);
+
+                btn.classList.remove("bg-brand/20", "border-brand/50", "text-brand", "shadow-sm", "shadow-brand/10", "bg-red-500/20", "border-red-500/50", "text-red-500");
+                btn.classList.add("bg-panel", "border-white/5", "text-gray-400", "hover:bg-white/5", "hover:border-white/10");
+                icon.classList.remove("ph-fill", "text-red-500");
+                icon.classList.add("ph");
+
+                if (isAdded) {
+                    if (acao === "favorito") {
+                        btn.classList.add("bg-red-500/20", "border-red-500/50", "text-red-500", "shadow-sm", "shadow-red-500/10");
+                        icon.classList.add("ph-fill", "text-red-500");
+                    } else {
+                        btn.classList.add("bg-brand/20", "border-brand/50", "text-brand", "shadow-sm", "shadow-brand/10");
+                        icon.classList.add("ph-fill");
+                    }
+                    btn.classList.remove("bg-panel", "border-white/5", "text-gray-400", "hover:bg-white/5", "hover:border-white/10", "hover:text-white", "hover:text-red-500");
+                } else {
+                    btn.classList.add("hover:text-white");
+                    if (acao === "favorito") {
+                        btn.classList.add("hover:text-red-500");
+                    }
+                }
+            }
+
+            function mostrarToast(message) {
+                const toast = document.getElementById("toastAction");
+                const toastMessage = document.getElementById("toastMessage");
+
+                toastMessage.innerText = message;
+                toast.classList.remove("translate-x-full", "opacity-0");
+                toast.classList.add("translate-x-0", "opacity-100");
+
+                setTimeout(() => {
+                    toast.classList.remove("translate-x-0", "opacity-100");
+                    toast.classList.add("translate-x-full", "opacity-0");
+                }, 3000);
+            }
+
+            // --- LIKES DE RESENHAS ---
+            async function toggleLike(event, reviewId, element) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                try {
+                    const formData = new FormData();
+                    formData.append("reviewId", reviewId);
+
+                    const response = await fetch("/Review/ToggleLike", { method: "POST", body: formData });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        const heartIcon = element.querySelector("i");
+                        const countSpan = element.querySelector(".like-count");
+
+                        if (result.isLiked) {
+                            heartIcon.classList.remove("ph");
+                            heartIcon.classList.add("ph-fill", "text-red-500");
+                            countSpan.classList.add("text-red-500");
+                        } else {
+                            heartIcon.classList.remove("ph-fill", "text-red-500");
+                            heartIcon.classList.add("ph");
+                            countSpan.classList.remove("text-red-500");
+                        }
+
+                        countSpan.innerText = result.likesCount;
+                    }
+                } catch (e) { console.error("Erro ao curtir", e); }
+            }
+        </script>
+}

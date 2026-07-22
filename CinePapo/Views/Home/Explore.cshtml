@@ -1,0 +1,272 @@
+﻿@using System.Security.Claims
+@model List<CinePapo.Models.TmdbMovie>
+@{
+    ViewData["Title"] = "Explorar - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string activeTab = ViewBag.ActiveTab;
+    bool isSearch = ViewBag.IsSearch;
+    var currentUser = ViewBag.CurrentUser as CinePapo.Models.User;
+    string currentUserId = currentUser?.Id;
+
+    var usersSearch = ViewBag.Users as List<CinePapo.Models.User>;
+    var trendingBrazil = ViewBag.TrendingBrazil as List<CinePapo.Models.TmdbMovie>;
+    var trendingWorld = ViewBag.TrendingWorld as List<CinePapo.Models.TmdbMovie>;
+    var suggestedMovies = ViewBag.SuggestedMovies as List<CinePapo.Models.TmdbMovie>;
+    var suggestedUsers = ViewBag.SuggestedUsers as List<CinePapo.Models.User>;
+    var communityReviews = ViewBag.CommunityReviews as List<CinePapo.Models.Review>;
+    var authors = ViewBag.Authors as List<CinePapo.Models.User>;
+}
+
+<style>
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+    .drag-scroll {
+        cursor: grab;
+    }
+
+        .drag-scroll:active {
+            cursor: grabbing;
+        }
+</style>
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col pb-24 md:pb-10 bg-[#0a0a0a]">
+
+    <header class="p-4 md:p-6 sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-md z-50 shadow-sm">
+        <h1 class="text-2xl font-black font-display mb-4 text-white tracking-tight">Explorar</h1>
+
+        <form method="get" action="/Home/Explore" class="relative group">
+            <input type="hidden" name="tab" value="@activeTab" />
+            <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg group-focus-within:text-brand transition-colors"></i>
+            <input type="text" name="q" value="@ViewBag.Query" placeholder="Buscar filmes, pessoas..."
+                   class="w-full bg-panel border border-white/10 focus:border-brand/50 focus:bg-white/5 rounded-xl py-3 pl-12 pr-4 text-white text-sm outline-none transition-all shadow-md">
+        </form>
+
+        <div class="flex gap-2 mt-5 overflow-x-auto hide-scrollbar">
+            @{
+                string activeClass = "bg-brand text-white font-bold";
+                string inactiveClass = "bg-panel border border-white/5 text-gray-400 font-medium hover:bg-white/10 hover:text-white";
+            }
+            <a href="/Home/Explore?q=@ViewBag.Query&tab=tudo" class="px-5 py-2 rounded-lg text-sm transition-all whitespace-nowrap @(activeTab == "tudo" ? activeClass : inactiveClass)">Tudo</a>
+            <a href="/Home/Explore?q=@ViewBag.Query&tab=filmes" class="px-5 py-2 rounded-lg text-sm transition-all whitespace-nowrap @(activeTab == "filmes" ? activeClass : inactiveClass)">Filmes</a>
+            <a href="/Home/Explore?q=@ViewBag.Query&tab=pessoas" class="px-5 py-2 rounded-lg text-sm transition-all whitespace-nowrap @(activeTab == "pessoas" ? activeClass : inactiveClass)">Pessoas</a>
+        </div>
+    </header>
+
+    <div class="px-4 md:px-6 py-6 space-y-10">
+
+        @if (isSearch)
+        {
+            @if (activeTab == "tudo" || activeTab == "filmes")
+            {
+                <div id="lista-filmes">
+                    <h2 class="font-bold text-brand uppercase tracking-widest text-xs mb-4 flex items-center gap-2"><i class="ph-fill ph-film-strip text-lg"></i> Filmes Encontrados</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @foreach (var movie in Model ?? new List<CinePapo.Models.TmdbMovie>())
+                        {
+                            <a href="/Home/Details/@movie.Id" class="flex items-center gap-4 p-3 bg-panel/30 hover:bg-white/5 border border-white/5 rounded-xl transition-colors group h-full">
+                                <div class="w-14 shrink-0 aspect-[2/3] rounded overflow-hidden shadow-sm border border-white/5 bg-white/5 flex items-center justify-center">
+                                    @if (!string.IsNullOrEmpty(movie.PosterPath))
+                                    {
+                                        <img src="https://image.tmdb.org/t/p/w200/@movie.PosterPath" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/200x300?text=Sem+Capa'">
+                                    }
+                                    else
+                                    {
+                                        <i class="ph ph-film text-gray-500 text-lg"></i>
+                                    }
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-bold text-white text-sm group-hover:text-brand transition-colors truncate">@movie.Title</h3>
+                                    <p class="text-xs text-gray-500 mt-1">@(string.IsNullOrEmpty(movie.ReleaseDate) ? "Lançamento desconhecido" : movie.ReleaseDate.Split('-')[0])</p>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (activeTab == "tudo" || activeTab == "pessoas")
+            {
+                <div id="lista-pessoas" class="mt-8">
+                    <h2 class="font-bold text-brand uppercase tracking-widest text-xs mb-4 flex items-center gap-2"><i class="ph-fill ph-users text-lg"></i> Pessoas Encontradas</h2>
+                    <div class="flex flex-col gap-3">
+                        @foreach (var user in usersSearch ?? new List<CinePapo.Models.User>())
+                        {
+                            <div class="flex items-center justify-between p-3 bg-panel/30 border border-white/5 rounded-xl">
+                                <a href="/Account/Profile?id=@user.Id" class="flex items-center gap-3 flex-1 min-w-0 group">
+                                    @if (!string.IsNullOrEmpty(user.ProfilePicture))
+                                    {
+                                        <img src="@user.ProfilePicture" class="w-12 h-12 rounded-full object-cover border border-white/10" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="w-12 h-12 rounded-full bg-brand/10 items-center justify-center border border-brand/20 hidden"><i class="ph-fill ph-user text-brand text-lg"></i></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center border border-brand/20"><i class="ph-fill ph-user text-brand text-lg"></i></div>
+                                    }
+                                    <div class="truncate pr-2">
+                                        <p class="font-bold text-sm text-white group-hover:text-brand transition-colors truncate">@(user.Name ?? user.Username)</p>
+                                        <p class="text-xs text-gray-500 truncate">@@@(user.Username?.ToLower())</p>
+                                    </div>
+                                </a>
+                                @if (!string.IsNullOrEmpty(currentUserId) && user.Id != currentUserId)
+                                {
+                                    bool isFollowing = currentUser?.FollowingIds != null && currentUser.FollowingIds.Contains(user.Id);
+                                    <button onclick="toggleFollow(event, '@user.Id', this)" class="w-24 py-1.5 rounded-full border border-brand @(isFollowing ? "text-brand bg-transparent" : "bg-brand text-white") text-[10px] font-bold uppercase tracking-wider transition-colors">
+                                        @(isFollowing ? "Seguindo" : "Seguir")
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+
+            @if (activeTab == "tudo" || activeTab == "filmes")
+            {
+                <section>
+                    <div class="flex justify-between items-end mb-4 pb-2 border-b border-white/5">
+                        <h2 class="font-bold text-base text-white flex items-center gap-2"><i class="ph-fill ph-fire text-brand text-xl"></i> Em alta no Brasil</h2>
+                    </div>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4">
+                        @foreach (var movie in trendingBrazil?.Take(5) ?? new List<CinePapo.Models.TmdbMovie>())
+                        {
+                            <a href="/Home/Details/@movie.Id" class="group flex flex-col h-full">
+                                <div class="w-full aspect-[2/3] rounded-lg overflow-hidden border border-white/5 group-hover:border-brand/50 transition-colors bg-panel/50">
+                                    <img src="https://image.tmdb.org/t/p/w300/@movie.PosterPath" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x450?text=Sem+Capa'">
+                                </div>
+                                <p class="text-sm font-bold text-gray-200 mt-2 line-clamp-2 group-hover:text-brand transition-colors">@movie.Title</p>
+                            </a>
+                        }
+                    </div>
+                </section>
+
+                <section>
+                    <div class="flex justify-between items-end mb-4 pb-2 border-b border-white/5">
+                        <h2 class="font-bold text-base text-white flex items-center gap-2"><i class="ph-fill ph-globe text-blue-500 text-xl"></i> Em alta no Mundo</h2>
+                    </div>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4">
+                        @foreach (var movie in trendingWorld?.Take(5) ?? new List<CinePapo.Models.TmdbMovie>())
+                        {
+                            <a href="/Home/Details/@movie.Id" class="group flex flex-col h-full">
+                                <div class="w-full aspect-[2/3] rounded-lg overflow-hidden border border-white/5 group-hover:border-blue-500/50 transition-colors bg-panel/50">
+                                    <img src="https://image.tmdb.org/t/p/w300/@movie.PosterPath" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x450?text=Sem+Capa'">
+                                </div>
+                                <p class="text-sm font-bold text-gray-200 mt-2 line-clamp-2 group-hover:text-blue-400 transition-colors">@movie.Title</p>
+                            </a>
+                        }
+                    </div>
+                </section>
+
+                <section>
+                    <div class="flex justify-between items-end mb-2 pb-2 border-b border-white/5">
+                        <h2 class="font-bold text-base text-white flex items-center gap-2"><i class="ph-fill ph-sparkle text-brand text-xl"></i> Recomendados para você</h2>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4">Baseado nos gêneros que você curte.</p>
+
+                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4">
+                        @foreach (var movie in suggestedMovies ?? new List<CinePapo.Models.TmdbMovie>())
+                        {
+                            <a href="/Home/Details/@movie.Id" class="group flex flex-col h-full">
+                                <div class="w-full aspect-[2/3] rounded-lg overflow-hidden border border-white/5 group-hover:border-brand/50 transition-colors bg-panel/50">
+                                    <img src="https://image.tmdb.org/t/p/w300/@movie.PosterPath" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x450?text=Sem+Capa'">
+                                </div>
+                                <p class="text-sm font-bold text-gray-200 mt-2 line-clamp-2 group-hover:text-brand transition-colors">@movie.Title</p>
+                            </a>
+                        }
+                    </div>
+                </section>
+            }
+
+            @if (activeTab == "tudo" || activeTab == "pessoas")
+            {
+                <section>
+                    <div class="flex justify-between items-end mb-4 pb-2 border-b border-white/5">
+                        <h2 class="font-bold text-base text-white flex items-center gap-2"><i class="ph-fill ph-users text-brand text-xl"></i> Cinéfilos para seguir</h2>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        @foreach (var user in suggestedUsers?.Take(5) ?? new List<CinePapo.Models.User>())
+                        {
+                            <div class="flex items-center justify-between p-3 bg-panel/30 border border-white/5 rounded-xl">
+                                <a href="/Account/Profile?id=@user.Id" class="flex items-center gap-3 flex-1 min-w-0 group">
+                                    @if (!string.IsNullOrEmpty(user.ProfilePicture))
+                                    {
+                                        <img src="@user.ProfilePicture" class="w-10 h-10 rounded-full object-cover border border-white/10" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="w-10 h-10 rounded-full bg-brand/10 items-center justify-center border border-brand/20 hidden"><i class="ph-fill ph-user text-brand text-lg"></i></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center border border-brand/20"><i class="ph-fill ph-user text-brand text-lg"></i></div>
+                                    }
+                                    <div class="truncate pr-2">
+                                        <p class="font-bold text-sm text-white group-hover:text-brand transition-colors truncate">@(user.Name ?? user.Username)</p>
+                                        <p class="text-[10px] text-gray-500 truncate">@@@(user.Username?.ToLower())</p>
+                                    </div>
+                                </a>
+                                @if (!string.IsNullOrEmpty(currentUserId) && user.Id != currentUserId)
+                                {
+                                    bool isFollowing = currentUser?.FollowingIds != null && currentUser.FollowingIds.Contains(user.Id);
+                                    <button onclick="toggleFollow(event, '@user.Id', this)" class="w-24 py-1.5 rounded-full border border-brand @(isFollowing ? "text-brand bg-transparent" : "bg-brand text-white") text-[10px] font-bold uppercase tracking-wider transition-colors">
+                                        @(isFollowing ? "Seguindo" : "Seguir")
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        }
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        async function toggleFollow(event, targetId, btnElement) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (btnElement.disabled) return;
+
+            btnElement.disabled = true;
+            const textBefore = btnElement.innerText;
+            btnElement.innerText = "...";
+
+            try {
+                const formData = new FormData();
+                formData.append('targetUserId', targetId);
+
+                const response = await fetch('/Account/ToggleFollow', { method: 'POST', body: formData });
+                const result = await response.json();
+
+                const isSuccess = result.success === true || result.Success === true;
+                const isFollowing = result.isFollowing === true || result.IsFollowing === true;
+
+                if (isSuccess) {
+                    if (isFollowing) {
+                        btnElement.className = "w-24 py-1.5 rounded-full border border-brand text-brand bg-transparent text-[10px] font-bold uppercase tracking-wider transition-colors";
+                        btnElement.innerText = "Seguindo";
+                    } else {
+                        btnElement.className = "w-24 py-1.5 rounded-full border border-brand bg-brand text-white text-[10px] font-bold uppercase tracking-wider transition-colors";
+                        btnElement.innerText = "Seguir";
+                    }
+                } else {
+                    btnElement.innerText = textBefore;
+                }
+            } catch (e) {
+                console.error("Erro ao processar ação de seguir", e);
+                btnElement.innerText = textBefore;
+            } finally {
+                btnElement.disabled = false;
+            }
+        }
+    </script>
+}

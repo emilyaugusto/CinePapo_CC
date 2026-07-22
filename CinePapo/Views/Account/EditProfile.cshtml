@@ -1,0 +1,159 @@
+﻿@model CinePapo.Models.User
+@{
+    ViewData["Title"] = "Editar Perfil - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var todosGeneros = new List<string> { "Ação", "Aventura", "Animação", "Comédia", "Crime", "Documentário", "Drama", "Família", "Fantasia", "Ficção", "Guerra", "Mistério", "Música", "Romance", "Terror", "Thriller" };
+
+    var meusGeneros = Model?.FavoriteGenres ?? new List<string>();
+    var safeName = Model?.Name ?? "";
+    var safeUsername = Model?.Username ?? "";
+    var safeProfilePic = (Model?.ProfilePicture == "REMOVE") ? "" : (Model?.ProfilePicture ?? "");
+    var safeCoverPic = (Model?.CoverPhoto == "REMOVE") ? "" : (Model?.CoverPhoto ?? "");
+}
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col bg-[#0a0a0a] relative">
+
+    <header class="p-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md z-50">
+        <div class="flex items-center gap-4">
+            <a href="/Account/Profile" class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+                <i class="ph-bold ph-arrow-left text-xl text-white"></i>
+            </a>
+            <h1 class="font-display font-bold text-xl text-white">Editar Perfil</h1>
+        </div>
+        <a href="/Account/Profile" class="text-sm font-bold text-gray-500 hover:text-white transition-colors">Cancelar</a>
+    </header>
+
+    <form action="/Account/EditProfile" method="post" enctype="multipart/form-data" class="flex flex-col flex-1 pb-32">
+        <input type="hidden" name="ProfilePictureBase64" id="ProfilePictureBase64" value="" />
+        <input type="hidden" name="CoverPhotoBase64" id="CoverPhotoBase64" value="" />
+
+        <div class="relative h-40 md:h-56 w-full bg-panel border-b border-white/10 group overflow-hidden" id="cover-container">
+            <label class="cursor-pointer block w-full h-full">
+                <input type="file" class="hidden" accept="image/*" onchange="compressImage(this, 'preview-cover', 'CoverPhotoBase64', 800, 'cover-placeholder', 'btn-remove-cover')">
+
+                <img id="preview-cover" src="@safeCoverPic" class="w-full h-full object-cover transition-transform group-hover:scale-105 duration-700 @(string.IsNullOrEmpty(safeCoverPic) ? "hidden" : "")">
+
+                <div id="cover-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 bg-gradient-to-br from-brand/10 to-transparent @(!string.IsNullOrEmpty(safeCoverPic) ? "hidden" : "")">
+                    <i class="ph-duotone ph-image text-5xl mb-2 opacity-50"></i>
+                    <span class="text-xs font-medium">Adicionar Foto de Capa</span>
+                </div>
+
+                <div class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+                    <i class="ph-bold ph-camera text-3xl text-white"></i>
+                    <span class="text-sm font-bold text-white tracking-wide mt-2">Alterar Capa</span>
+                </div>
+            </label>
+
+            <button type="button" id="btn-remove-cover" onclick="removeImage('preview-cover', 'CoverPhotoBase64', 'cover-placeholder', 'btn-remove-cover')" class="absolute top-3 right-3 bg-red-500/80 p-2 rounded-full text-white hover:bg-red-600 z-20 @(string.IsNullOrEmpty(safeCoverPic) ? "hidden" : "")">
+                <i class="ph-bold ph-trash"></i>
+            </button>
+        </div>
+
+        <div class="px-5 md:px-8 relative z-10">
+            <div class="relative w-28 h-28 -mt-14 md:-mt-16 rounded-full border-[6px] border-[#0a0a0a] bg-panel flex items-center justify-center overflow-hidden shadow-xl group" id="profile-container">
+                <label class="cursor-pointer w-full h-full flex items-center justify-center relative">
+                    <input type="file" class="hidden" accept="image/*" onchange="compressImage(this, 'preview-profile', 'ProfilePictureBase64', 300, 'icon-profile', 'btn-remove-profile')">
+
+                    <i id="icon-profile" class="ph-fill ph-user text-5xl text-gray-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 @(!string.IsNullOrEmpty(safeProfilePic) ? "hidden" : "")"></i>
+
+                    <img id="preview-profile" src="@safeProfilePic" class="w-full h-full object-cover relative z-10 @(string.IsNullOrEmpty(safeProfilePic) ? "hidden" : "")">
+
+                    <div class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px] z-20">
+                        <i class="ph-bold ph-camera text-3xl text-white"></i>
+                    </div>
+                </label>
+            </div>
+
+            <button type="button" id="btn-remove-profile" onclick="removeImage('preview-profile', 'ProfilePictureBase64', 'icon-profile', 'btn-remove-profile')" class="absolute top-2 left-[100px] md:left-[110px] bg-red-500/80 w-6 h-6 rounded-full flex items-center justify-center text-white hover:bg-red-600 z-30 shadow-md @(string.IsNullOrEmpty(safeProfilePic) ? "hidden" : "")">
+                <i class="ph-bold ph-x text-xs"></i>
+            </button>
+        </div>
+
+        <div class="px-5 md:px-8 flex-1 flex flex-col gap-8 mt-6">
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-400 mb-2">Seu Nome</label>
+                    <input type="text" name="Name" value="@safeName" required class="w-full bg-panel border border-white/10 rounded-2xl px-4 py-3.5 text-white focus:border-brand outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-400 mb-2">Nome de Usuário</label>
+                    <input type="text" name="Username" value="@safeUsername" required class="w-full bg-panel border border-white/10 rounded-2xl px-4 py-3.5 text-white focus:border-brand outline-none transition-all">
+                </div>
+            </div>
+
+            <hr class="border-white/5">
+
+            <div>
+                <label class="block text-sm font-bold text-white mb-4">Gêneros Favoritos</label>
+                <div class="flex flex-wrap gap-2.5">
+                    @foreach (var genero in todosGeneros)
+                    {
+                        <label class="cursor-pointer relative">
+                            <input type="checkbox" name="FavoriteGenres" value="@genero" class="peer hidden" checked="@meusGeneros.Contains(genero)">
+                            <div class="px-5 py-2.5 rounded-full border border-white/10 bg-panel text-sm font-medium text-gray-400 peer-checked:bg-brand peer-checked:text-white peer-checked:border-brand hover:border-white/30 transition-all">
+                                @genero
+                            </div>
+                        </label>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="fixed bottom-0 w-full p-4 md:relative md:p-0 md:px-8 md:mt-8 z-50">
+            <button type="submit" class="w-full py-4 bg-brand text-white font-bold rounded-2xl hover:bg-orange-600 transition-all shadow-[0_0_20px_rgba(255,85,0,0.3)]">
+                Salvar Alterações
+            </button>
+        </div>
+    </form>
+</main>
+
+@section Scripts {
+    <script>
+        function removeImage(imgId, hiddenInputId, placeholderId, btnId) {
+            document.getElementById(imgId).src = "";
+            document.getElementById(imgId).classList.add('hidden');
+            document.getElementById(hiddenInputId).value = "REMOVE";
+
+            if(placeholderId) document.getElementById(placeholderId).classList.remove('hidden');
+            if(btnId) document.getElementById(btnId).classList.add('hidden');
+        }
+
+        function compressImage(inputElement, imgId, hiddenInputId, maxSize, placeholderId, btnId) {
+            const file = inputElement.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height && width > maxSize) {
+                        height *= maxSize / width; width = maxSize;
+                    }
+                    else if (height > maxSize) {
+                        width *= maxSize / height; height = maxSize;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+
+                    const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
+
+                    document.getElementById(hiddenInputId).value = compressedDataUrl;
+                    const imgElement = document.getElementById(imgId);
+                    imgElement.src = compressedDataUrl;
+                    imgElement.classList.remove('hidden');
+
+                    if(placeholderId) document.getElementById(placeholderId).classList.add('hidden');
+                    if(btnId) document.getElementById(btnId).classList.remove('hidden');
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+}

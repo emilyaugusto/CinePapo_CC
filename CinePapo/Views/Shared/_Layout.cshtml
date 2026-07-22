@@ -1,0 +1,132 @@
+﻿@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<!DOCTYPE html>
+<html lang="pt-BR" class="bg-[#0a0a0a] text-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>@ViewData["Title"]</title>
+
+    <link rel="icon" type="image/png" href="~/img/favicon.png">
+    <link rel="apple-touch-icon" href="~/img/favicon.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Montserrat', 'sans-serif'] },
+                    colors: { brand: '#FF5500', dark: '#0a0a0a', panel: '#151515', input: '#1A1A1A' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex justify-center bg-[#0a0a0a]">
+
+    <div class="flex w-full max-w-7xl relative">
+
+        <nav class="hidden md:flex flex-col w-64 lg:w-72 h-screen sticky top-0 border-r border-white/10 pt-6 pb-8 px-6">
+
+            <a href="/Home/Index" class="mb-6 mt-2 block focus:outline-none hover:opacity-90 transition-opacity">
+                <img src="~/img/logo_comprida.png" alt="CinePapo Logo" class="w-[80%] md:w-33 h-auto object-contain">
+            </a>
+
+            <div class="flex flex-col gap-2 flex-1">
+                <a href="/Home/Index" class="flex items-center gap-4 p-3 rounded-full transition-all @(currentAction == "Index" ? "bg-brand/10 text-brand font-bold" : "hover:bg-white/5 text-white font-medium group")">
+                    <i class="@(currentAction == "Index" ? "ph-fill" : "ph group-hover:scale-110 transition-transform") ph-house text-2xl"></i> Início
+                </a>
+
+                <a href="/Home/Explore" class="flex items-center gap-4 p-3 rounded-full transition-all @(currentAction == "Explore" ? "bg-brand/10 text-brand font-bold" : "hover:bg-white/5 text-white font-medium group")">
+                    <i class="@(currentAction == "Explore" ? "ph-fill" : "ph group-hover:scale-110 transition-transform") ph-magnifying-glass text-2xl"></i> Explorar
+                </a>
+
+                <a href="/Home/Notifications" class="flex items-center gap-4 p-3 rounded-full transition-all @(ViewContext.RouteData.Values["action"]?.ToString() == "Notifications" ? "bg-brand/10 text-brand font-bold" : "hover:bg-white/5 text-white font-medium group")">
+                    <div class="relative">
+                        <i class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Notifications" ? "ph-fill" : "ph group-hover:scale-110 transition-transform") ph-bell text-2xl"></i>
+                        @if (ViewBag.HasUnreadNotifications == true)
+                        {
+                            <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-brand rounded-full border-2 border-[#0a0a0a]"></span>
+                        }
+                    </div>
+                    Notificações
+                </a>
+
+                <a href="/Account/Profile" class="flex items-center gap-4 p-3 rounded-full transition-all @(currentAction == "Profile" ? "bg-brand/10 text-brand font-bold" : "hover:bg-white/5 text-white font-medium group")">
+                    <i class="@(currentAction == "Profile" ? "ph-fill" : "ph group-hover:scale-110 transition-transform") ph-user text-2xl"></i> Perfil
+                </a>
+            </div>
+
+            <a href="/Review/Create" class="flex items-center justify-center gap-2 p-3 mt-4 mx-2 rounded-full bg-brand text-white font-bold hover:bg-orange-600 transition-all shadow-[0_0_15px_rgba(255,85,0,0.3)] group">
+                <i class="ph-bold ph-pencil-simple text-xl group-hover:rotate-12 transition-transform"></i> Escrever
+            </a>
+
+            <a href="/Account/Logout" class="flex items-center gap-4 p-3 rounded-full hover:bg-red-500/10 text-red-500 font-medium transition-all mt-4">
+                <i class="ph ph-sign-out text-2xl"></i> Sair da Sessão
+            </a>
+        </nav>
+
+        @RenderBody()
+
+        @await RenderSectionAsync("RightSidebar", required: false)
+
+        <nav class="md:hidden fixed bottom-0 w-full bg-[#0a0a0a]/95 backdrop-blur-lg border-t border-white/10 flex justify-around items-center py-4 z-50 pb-[calc(14px+env(safe-area-inset-bottom))]">
+
+            <!-- Home -->
+            <a href="/Home/Index" class="flex flex-col items-center justify-center @(currentAction == "Index" ? "text-brand" : "text-gray-500 hover:text-white transition-colors")">
+                <i class="@(currentAction == "Index" ? "ph-fill" : "ph") ph-house text-[26px]"></i>
+            </a>
+
+            <!-- Explore -->
+            <a href="/Home/Explore" class="flex flex-col items-center justify-center @(currentAction == "Explore" ? "text-brand" : "text-gray-500 hover:text-white transition-colors")">
+                <i class="@(currentAction == "Explore" ? "ph-fill" : "ph") ph-magnifying-glass text-[26px]"></i>
+            </a>
+
+            <!-- Botão Central -->
+            <div class="relative flex items-center justify-center">
+                <a href="/Review/Create" class="w-[58px] h-[58px] bg-brand rounded-full flex items-center justify-center text-white shadow-xl -mt-9 border-4 border-[#0a0a0a] hover:scale-105 active:scale-95 transition-all">
+                    <i class="ph-bold ph-plus text-[26px]"></i>
+                </a>
+            </div>
+
+            <!-- Notificações -->
+            <a href="/Home/Notifications" class="flex flex-col items-center justify-center @(ViewContext.RouteData.Values["action"]?.ToString() == "Notifications" ? "text-brand" : "text-gray-500 hover:text-white transition-colors") relative">
+                <div class="relative">
+                    <i class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Notifications" ? "ph-fill" : "ph") ph-bell text-[26px]"></i>
+                    @if (ViewBag.HasUnreadNotifications == true)
+                    {
+                        <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-brand rounded-full border-2 border-[#0a0a0a]"></span>
+                    }
+                </div>
+            </a>
+
+            <!-- Perfil -->
+            <a href="/Account/Profile" class="flex flex-col items-center justify-center @(currentAction == "Profile" ? "text-brand" : "text-gray-500 hover:text-white transition-colors")">
+                <i class="@(currentAction == "Profile" ? "ph-fill" : "ph") ph-user text-[26px]"></i>
+            </a>
+
+        </nav>
+
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

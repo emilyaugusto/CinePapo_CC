@@ -1,0 +1,432 @@
+﻿@{
+    ViewData["Title"] = "Bem-vindo - CinePapo";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR" class="bg-[#0a0a0a] text-white">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Montserrat', 'sans-serif'] },
+                    colors: { brand: '#FF5500', dark: '#0a0a0a', input: '#1A1A1A', panel: '#151515' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card-selected {
+            border-color: #FF5500 !important;
+            background-color: rgba(255, 85, 0, 0.08) !important;
+        }
+
+            .card-selected .icon-color {
+                color: #FF5500 !important;
+            }
+
+        .pill-selected {
+            background-color: #FF5500 !important;
+            border-color: #FF5500 !important;
+            color: white !important;
+        }
+
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        #btn-continuar:disabled {
+            background-color: #333 !important;
+            color: #666 !important;
+            cursor: not-allowed;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+    </style>
+</head>
+
+<body class="antialiased min-h-screen flex items-center justify-center md:p-6 lg:p-12 relative bg-[#0a0a0a]">
+
+    <div class="fixed top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-full max-w-2xl h-96 bg-brand/10 blur-[120px] rounded-full pointer-events-none z-0 hidden md:block"></div>
+
+    <div class="w-full min-h-screen md:min-h-0 md:h-auto md:max-w-3xl lg:max-w-4xl flex flex-col relative z-10 bg-[#0a0a0a] md:bg-[#111111] md:rounded-[2rem] md:border md:border-white/5 md:shadow-2xl overflow-hidden transition-all duration-300">
+
+        <div id="header-progress" class="px-6 pt-6 pb-2 md:p-8 md:pb-4 transition-opacity duration-300 z-20 bg-[#0a0a0a] md:bg-transparent">
+            <div class="flex items-center justify-between mb-4">
+                <button type="button" onclick="prevStep()" class="text-gray-400 hover:text-white transition-all p-2 -ml-2" id="btn-voltar" style="opacity: 0; pointer-events: none;">
+                    <i class="ph-bold ph-arrow-left text-xl md:text-2xl"></i>
+                </button>
+                <span class="text-xs md:text-sm font-bold text-gray-500 tracking-[0.1em] uppercase">Passo <span id="step-counter" class="text-brand">1</span> de 3</span>
+            </div>
+
+            <div class="flex gap-2 md:gap-3 h-1 md:h-1.5 w-full">
+                <div id="bar-1" class="flex-1 rounded-full bg-brand transition-all duration-500"></div>
+                <div id="bar-2" class="flex-1 rounded-full bg-white/10 transition-all duration-500"></div>
+                <div id="bar-3" class="flex-1 rounded-full bg-white/10 transition-all duration-500"></div>
+            </div>
+        </div>
+
+        <form action="/Account/CompleteOnboarding" method="post" id="onboarding-form" class="flex-1 flex flex-col h-full" onsubmit="showLoading()">
+
+            <input type="hidden" name="UserId" value="@ViewBag.UserId" />
+
+            <div class="flex-1 overflow-y-auto hide-scroll flex flex-col px-6 pb-6 pt-2 md:px-10 md:py-6">
+
+                <div id="step-1" class="step-container transition-all duration-500 w-full flex flex-col my-auto">
+                    <div class="mb-8 md:mb-10 text-left">
+                        <h1 class="font-display text-3xl md:text-4xl lg:text-5xl font-black mb-2 tracking-tight">O que te traz aqui?</h1>
+                        <p class="text-gray-400 text-sm md:text-base">Escolha seu objetivo principal na plataforma.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+                        <label class="flex md:flex-col items-center md:items-start gap-4 p-5 md:p-6 rounded-2xl border border-white/5 bg-input/40 cursor-pointer hover:bg-input hover:border-white/20 md:hover:-translate-y-1 transition-all select-card group">
+                            <input type="radio" name="PlatformGoals" value="Escrever Resenhas" required class="hidden">
+                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-dark flex items-center justify-center border border-white/5 flex-shrink-0 md:mb-2 shadow-sm"><i class="ph-fill ph-star text-xl md:text-2xl icon-color text-gray-400 transition-all"></i></div>
+                            <div class="text-left">
+                                <p class="font-bold text-white text-base md:text-lg mb-0.5">Escrever Resenhas</p>
+                                <p class="text-xs md:text-sm text-gray-500 leading-tight">Dar notas e analisar a fundo</p>
+                            </div>
+                        </label>
+
+                        <label class="flex md:flex-col items-center md:items-start gap-4 p-5 md:p-6 rounded-2xl border border-white/5 bg-input/40 cursor-pointer hover:bg-input hover:border-white/20 md:hover:-translate-y-1 transition-all select-card group">
+                            <input type="radio" name="PlatformGoals" value="Conhecer" class="hidden">
+                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-dark flex items-center justify-center border border-white/5 flex-shrink-0 md:mb-2 shadow-sm"><i class="ph-fill ph-users text-xl md:text-2xl icon-color text-gray-400 transition-all"></i></div>
+                            <div class="text-left">
+                                <p class="font-bold text-white text-base md:text-lg mb-0.5">Conhecer Gente</p>
+                                <p class="text-xs md:text-sm text-gray-500 leading-tight">Encontrar cinéfilos com gostos parecidos</p>
+                            </div>
+                        </label>
+
+                        <label class="flex md:flex-col items-center md:items-start gap-4 p-5 md:p-6 rounded-2xl border border-white/5 bg-input/40 cursor-pointer hover:bg-input hover:border-white/20 md:hover:-translate-y-1 transition-all select-card group">
+                            <input type="radio" name="PlatformGoals" value="Debater" class="hidden">
+                            <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-dark flex items-center justify-center border border-white/5 flex-shrink-0 md:mb-2 shadow-sm"><i class="ph-fill ph-megaphone text-xl md:text-2xl icon-color text-gray-400 transition-all"></i></div>
+                            <div class="text-left">
+                                <p class="font-bold text-white text-base md:text-lg mb-0.5">Debater</p>
+                                <p class="text-xs md:text-sm text-gray-500 leading-tight">Discutir teorias e finais</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="step-2" class="step-container hidden transition-all duration-500 opacity-0 w-full flex-col my-auto">
+                    <div class="mb-8 md:mb-10 text-left">
+                        <h1 class="font-display text-3xl md:text-4xl lg:text-5xl font-black mb-2 tracking-tight">Seus gêneros</h1>
+                        <p class="text-gray-400 text-sm md:text-base">Precisamos de pelo menos <span class="text-brand font-bold">3 gêneros</span> que você não vive sem.</p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 md:gap-4">
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Ação" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Ação</div></label>
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Comédia" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Comédia</div></label>
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Drama" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Drama</div></label>
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Ficção Científica" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Ficção Científica</div></label>
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Terror" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Terror</div></label>
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Romance" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Romance</div></label>
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Animação" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Animação</div></label>
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Suspense" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Suspense</div></label>
+                        <label class="cursor-pointer"><input type="checkbox" name="FavoriteGenres" value="Documentário" class="hidden genre-checkbox"><div class="genre-pill px-5 py-2.5 md:px-6 md:py-3 rounded-full border border-white/10 bg-input/50 text-sm md:text-base font-medium text-gray-300 hover:border-brand/50 transition-all select-none">Documentário</div></label>
+                    </div>
+                </div>
+
+                <div id="step-3" class="step-container hidden transition-all duration-500 opacity-0 w-full flex-col my-auto">
+                    <div class="mb-8 md:mb-10 text-left">
+                        <h1 class="font-display text-3xl md:text-4xl lg:text-5xl font-black mb-2 tracking-tight">Onde assiste?</h1>
+                        <p class="text-gray-400 text-sm md:text-base">Selecione seus serviços de streaming ou locais favoritos.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                   
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="StreamingPlatforms" value="Cinema" class="hidden stream-checkbox">
+                            <div class="stream-card flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-2xl border border-white/5 bg-input/40 hover:bg-input/80 hover:border-white/20 transition-all shadow-sm">
+                                <i class="ph-fill ph-popcorn text-4xl md:text-5xl icon-color text-gray-400 transition-all"></i>
+                                <span class="text-xs md:text-sm font-bold mt-2 text-white">Cinema</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="StreamingPlatforms" value="Netflix" class="hidden stream-checkbox">
+                            <div class="stream-card flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-2xl border border-white/5 bg-input/40 hover:bg-input/80 hover:border-white/20 transition-all shadow-sm">
+                                <img src="/img/onde/Logonetflix.png" alt="Netflix" class="max-w-[70%] max-h-12 object-contain" />
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="StreamingPlatforms" value="Prime Video" class="hidden stream-checkbox">
+                            <div class="stream-card flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-2xl border border-white/5 bg-input/40 hover:bg-input/80 hover:border-white/20 transition-all shadow-sm">
+                                <img src="/img/onde/logo_primevideo.png" alt="Prime Video" class="max-w-[80%] max-h-12 object-contain" />
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="StreamingPlatforms" value="HBO Max" class="hidden stream-checkbox">
+                            <div class="stream-card flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-2xl border border-white/5 bg-input/40 hover:bg-input/80 hover:border-white/20 transition-all shadow-sm">
+                                <img src="/img/onde/hbo_max_logo.png" alt="HBO Max" class="max-w-[80%] max-h-12 object-contain" />
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="StreamingPlatforms" value="Disney+" class="hidden stream-checkbox">
+                            <div class="stream-card flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-2xl border border-white/5 bg-input/40 hover:bg-input/80 hover:border-white/20 transition-all shadow-sm">
+                                <img src="/img/onde/Disney+_logo.svg.png" alt="Disney+" class="max-w-[80%] max-h-12 object-contain" />
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="StreamingPlatforms" value="Globo Play" class="hidden stream-checkbox">
+                            <div class="stream-card flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-2xl border border-white/5 bg-input/40 hover:bg-input/80 hover:border-white/20 transition-all shadow-sm">
+                                <img src="/img/onde/globoplay_logo.png" alt="Globo Play" class="max-w-[70%] max-h-12 object-contain" />
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="StreamingPlatforms" value="Apple TV" class="hidden stream-checkbox">
+                            <div class="stream-card flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-2xl border border-white/5 bg-input/40 hover:bg-input/80 hover:border-white/20 transition-all shadow-sm">
+                                <img src="/img/onde/Apple-TV-logo.png" alt="Apple TV" class="max-w-[60%] max-h-12 object-contain" />
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="checkbox" name="StreamingPlatforms" value="Outro" class="hidden stream-checkbox">
+                            <div class="stream-card flex flex-col items-center justify-center p-4 md:p-6 aspect-square rounded-2xl border border-white/5 bg-input/40 hover:bg-input/80 hover:border-white/20 transition-all shadow-sm">
+                                <i class="ph-fill ph-television text-4xl md:text-5xl icon-color text-gray-400 transition-all"></i>
+                                <span class="text-xs md:text-sm font-bold mt-2 text-white">Outro</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="step-4" class="step-container hidden transition-all duration-500 opacity-0 w-full flex-col my-auto max-w-lg mx-auto">
+                    <div class="mb-6 text-center">
+                        <h1 class="font-display text-4xl md:text-5xl font-black mb-2">Quase lá!</h1>
+                        <p class="text-gray-400 text-sm md:text-base">Preencha seus dados de identificação abaixo.</p>
+                    </div>
+
+                    <div class="space-y-4 w-full">
+
+                        <div class="flex justify-center mb-6">
+                            <label class="relative w-24 h-24 md:w-28 md:h-28 rounded-full border border-white/10 bg-input/60 flex items-center justify-center cursor-pointer group overflow-hidden hover:border-brand transition-colors">
+                                <input type="file" accept="image/*" class="hidden" onchange="previewAvatar(this)">
+                                <img id="avatar-preview" src="" class="w-full h-full object-cover hidden" />
+                                <div id="avatar-placeholder" class="text-center group-hover:text-brand transition-colors text-gray-500">
+                                    <i class="ph-bold ph-camera text-2xl"></i>
+                                    <span class="block text-[9px] font-bold uppercase mt-1">Foto</span>
+                                </div>
+                            </label>
+                            <input type="hidden" id="ProfilePictureBase64" name="ProfilePictureBase64" />
+                        </div>
+
+                        <div class="relative w-full">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Nome Completo</label>
+                            <i class="ph-bold ph-identification-card absolute left-5 top-[46px] text-gray-500 text-xl"></i>
+                            <input type="text" name="FullName" required
+                                   value="@ViewBag.GoogleName"
+                                   @(ViewBag.GoogleName != null ? "readonly" : "")
+                                   placeholder="Seu nome e sobrenome"
+                                   class="w-full bg-input/60 border border-white/10 rounded-2xl py-4 md:py-5 pl-14 pr-6 text-white text-lg font-medium focus:outline-none focus:border-brand transition-all @(ViewBag.GoogleName != null ? "opacity-60 cursor-not-allowed" : "")">
+                            @if (ViewBag.GoogleName != null)
+                            {
+                                <p class="text-[10px] text-brand mt-2 ml-1 italic">* Nome importado do Google</p>
+                            }
+                        </div>
+
+                        <div class="relative w-full">
+                            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Nome de usuário (@@)</label>
+                            <i class="ph-bold ph-at absolute left-5 top-[46px] text-gray-500 text-xl"></i>
+                            <input type="text" id="username-input" name="Username" required placeholder="Como os outros te verão"
+                                   class="w-full bg-input/60 border border-white/10 rounded-2xl py-4 md:py-5 pl-14 pr-6 text-white text-lg font-medium focus:outline-none transition-all">
+
+                            <p id="username-error" class="text-[10px] text-red-500 mt-2 ml-1 hidden">
+                                <i class="ph-bold ph-warning-circle"></i> Este nome de usuário já está em uso.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="p-6 pt-4 md:p-10 md:pt-6 bg-[#0a0a0a] md:bg-transparent border-t border-white/5 md:border-none sticky bottom-0 z-20 mt-auto">
+                <button type="button" onclick="nextStep()" id="btn-continuar" disabled class="w-full py-4 md:py-4 bg-brand text-white font-bold text-lg rounded-xl hover:bg-orange-600 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(255,85,0,0.3)] flex items-center justify-center gap-2">
+                    Continuar <i class="ph-bold ph-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 4;
+        let isUsernameTaken = false;
+        let typingTimer;
+
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('avatar-preview');
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    document.getElementById('avatar-placeholder').classList.add('hidden');
+
+                    document.getElementById('ProfilePictureBase64').value = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function validateStep() {
+            const btn = document.getElementById('btn-continuar');
+            let isValid = false;
+
+            if (currentStep === 1) {
+                isValid = document.querySelector('input[name="PlatformGoals"]:checked') !== null;
+            }
+            else if (currentStep === 2) {
+                isValid = document.querySelectorAll('.genre-checkbox:checked').length >= 3;
+            }
+            else if (currentStep === 3) {
+                isValid = document.querySelectorAll('.stream-checkbox:checked').length > 0;
+            }
+            else if (currentStep === 4) {
+                const nameInput = document.querySelector('input[name="FullName"]');
+                const usernameInput = document.querySelector('input[name="Username"]');
+
+                if (nameInput && usernameInput) {
+                    usernameInput.value = usernameInput.value.toLowerCase().replace(/\s/g, '');
+                    const usernameValue = usernameInput.value;
+
+                    const regex = /^[a-z0-9._]+$/;
+                    const noDoubleDots = !usernameValue.includes('..');
+                    const validLength = usernameValue.length >= 3 && usernameValue.length <= 30;
+                    const validChars = regex.test(usernameValue);
+
+                    isValid = nameInput.value.trim().length >= 3 &&
+                              validChars &&
+                              noDoubleDots &&
+                              validLength &&
+                              !isUsernameTaken;
+
+                    if (usernameValue.length > 0 && (!validChars || !noDoubleDots)) {
+                        usernameInput.classList.add('border-red-500');
+                    } else if (!isUsernameTaken) {
+                        usernameInput.classList.remove('border-red-500');
+                    }
+                }
+            }
+            btn.disabled = !isValid;
+        }
+
+        async function checkUsernameAvailability(username) {
+            if (username.length < 3) return;
+
+            try {
+                const response = await fetch(`/Account/CheckUsername?username=${username}`);
+                const data = await response.json();
+
+                const errorElement = document.getElementById('username-error');
+                const usernameInput = document.getElementById('username-input');
+
+                isUsernameTaken = data;
+
+                if (isUsernameTaken) {
+                    errorElement.classList.remove('hidden');
+                    usernameInput.classList.add('border-red-500');
+                } else {
+                    errorElement.classList.add('hidden');
+                    usernameInput.classList.remove('border-red-500');
+                }
+                validateStep();
+            } catch (err) {
+                console.error("Erro ao validar username:", err);
+            }
+        }
+
+        document.addEventListener('input', (e) => {
+            if (e.target.name === "Username") {
+                clearTimeout(typingTimer);
+                document.getElementById('btn-continuar').disabled = true;
+                typingTimer = setTimeout(() => { checkUsernameAvailability(e.target.value); }, 500);
+            }
+            if (e.target.name === "FullName") validateStep();
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.name === "PlatformGoals") {
+                document.querySelectorAll('#step-1 .select-card').forEach(c => c.classList.remove('card-selected'));
+                if(e.target.checked) e.target.closest('.select-card').classList.add('card-selected');
+            }
+            if (e.target.classList.contains('genre-checkbox')) {
+                if(e.target.checked) e.target.nextElementSibling.classList.add('pill-selected');
+                else e.target.nextElementSibling.classList.remove('pill-selected');
+            }
+            if (e.target.classList.contains('stream-checkbox')) {
+                if(e.target.checked) e.target.nextElementSibling.classList.add('card-selected');
+                else e.target.nextElementSibling.classList.remove('card-selected');
+            }
+            validateStep();
+        });
+
+        function updateUI() {
+            if (currentStep < 4) {
+                document.getElementById('header-progress').classList.remove('hidden');
+                document.getElementById('step-counter').innerText = currentStep;
+                document.getElementById('btn-voltar').style.opacity = currentStep === 1 ? '0' : '1';
+                document.getElementById('btn-voltar').style.pointerEvents = currentStep === 1 ? 'none' : 'auto';
+                document.getElementById('bar-1').className = currentStep >= 1 ? 'flex-1 rounded-full bg-brand transition-all duration-500' : 'flex-1 rounded-full bg-white/10';
+                document.getElementById('bar-2').className = currentStep >= 2 ? 'flex-1 rounded-full bg-brand transition-all duration-500' : 'flex-1 rounded-full bg-white/10';
+                document.getElementById('bar-3').className = currentStep >= 3 ? 'flex-1 rounded-full bg-brand transition-all duration-500' : 'flex-1 rounded-full bg-white/10';
+                const btn = document.getElementById('btn-continuar');
+                btn.innerHTML = 'Continuar <i class="ph-bold ph-arrow-right"></i>';
+                btn.type = 'button';
+            } else {
+                document.getElementById('header-progress').classList.add('hidden');
+                const btn = document.getElementById('btn-continuar');
+                btn.innerHTML = 'Finalizar CinePapo';
+                btn.type = 'submit';
+            }
+
+            for (let i = 1; i <= totalSteps; i++) {
+                const stepEl = document.getElementById(`step-${i}`);
+                if (i === currentStep) {
+                    stepEl.classList.remove('hidden');
+                    stepEl.classList.add('flex');
+                    setTimeout(() => {
+                        stepEl.classList.remove('opacity-0', 'translate-x-4', '-translate-x-4');
+                        stepEl.classList.add('opacity-100', 'translate-x-0');
+                    }, 20);
+                } else {
+                    stepEl.classList.remove('opacity-100', 'translate-x-0');
+                    stepEl.classList.add('opacity-0', i < currentStep ? '-translate-x-4' : 'translate-x-4');
+                    setTimeout(() => {
+                        stepEl.classList.add('hidden');
+                        stepEl.classList.remove('flex');
+                    }, 300);
+                }
+            }
+        }
+
+        function nextStep() { if (currentStep < totalSteps) { currentStep++; updateUI(); validateStep(); } }
+        function prevStep() { if (currentStep > 1) { currentStep--; updateUI(); validateStep(); } }
+        function showLoading() {
+            const btn = document.getElementById('btn-continuar');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Criando seu mundo cinéfilo...';
+            btn.style.pointerEvents = 'none';
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+        }
+
+        updateUI();
+        validateStep();
+    </script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Início - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var currentUser = ViewBag.CurrentUser as CinePapo.Models.User;
+    var reviews = ViewBag.FeedReviews as List<CinePapo.Models.Review>;
+    var authors = ViewBag.Authors as List<CinePapo.Models.User>;
+}
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col pb-24 bg-[#0a0a0a]">
+
+    <header class="p-4 border-b border-white/10 sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md z-50 flex flex-col gap-4">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-black font-display mb-4 text-white tracking-tight">Página Inicial</h1>
+        </div>
+
+        <div class="flex gap-6 border-b border-white/10 -mb-4">
+            <a href="/Home/Index?filter=global" class="pb-3 text-sm font-bold transition-colors @(ViewBag.CurrentFilter != "seguindo" ? "text-brand border-b-2 border-brand" : "text-gray-500 hover:text-white")">Global</a>
+            <a href="/Home/Index?filter=seguindo" class="pb-3 text-sm font-bold transition-colors @(ViewBag.CurrentFilter == "seguindo" ? "text-brand border-b-2 border-brand" : "text-gray-500 hover:text-white")">Seguindo</a>
+        </div>
+    </header>
+
+    <div class="px-5 py-6">
+        @if (reviews != null && reviews.Count > 0)
+        {
+            <div class="space-y-4" id="feed-container">
+                @foreach (var review in reviews)
+                {
+                    var author = authors?.FirstOrDefault(a => a.Id == review.UserId);
+                    var googleId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+                    bool isLiked = review.LikedByUsers != null && currentUser != null &&
+                                   (review.LikedByUsers.Contains(currentUser.Id) || (googleId != null && review.LikedByUsers.Contains(googleId)));
+                    
+                    <div class="block relative bg-panel border border-white/5 rounded-2xl p-5 shadow-sm">
+
+                        <div class="flex justify-between items-start mb-4">
+                            <a href="/Account/Profile?id=@author?.Id" class="flex items-center gap-3 cursor-pointer group/user z-10 relative">
+                                @if (author != null && !string.IsNullOrEmpty(author.ProfilePicture))
+                                {
+                                    <img src="@author.ProfilePicture" class="w-10 h-10 rounded-full object-cover border border-white/10 group-hover/user:border-brand/50 transition-colors">
+                                }
+                                else
+                                {
+                                    <div class="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center border border-brand/30 group-hover/user:border-brand/50 transition-colors">
+                                        <i class="ph-fill ph-user text-sm text-brand"></i>
+                                    </div>
+                                }
+                                <div>
+                                    <h3 class="font-bold text-white text-sm group-hover/user:text-brand transition-colors">@(author?.Name ?? "Usuário")</h3>
+                                    <p class="text-[10px] text-gray-500">@@@(author?.Username?.ToLower() ?? "usuario")</p>
+                                </div>
+                            </a>
+
+                            @if (currentUser != null && review.UserId != currentUser.Id)
+                            {
+                                bool isFollowing = currentUser.FollowingIds != null && currentUser.FollowingIds.Contains(review.UserId);
+                                if (isFollowing)
+                                {
+                                    <button onclick="toggleFollow('@review.UserId', this)" class="px-4 py-1.5 rounded-full border border-brand text-brand bg-transparent text-xs font-bold transition-colors hover:bg-brand/10 z-10 relative">
+                                        Seguindo
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button onclick="toggleFollow('@review.UserId', this)" class="px-4 py-1.5 rounded-full border border-brand bg-brand text-white text-xs font-bold transition-colors hover:bg-orange-600 shadow-[0_0_10px_rgba(255,85,0,0.3)] z-10 relative">
+                                        Seguir
+                                    </button>
+                                }
+                            }
+                        </div>
+
+                        <a href="/Review/Details/@review.Id" class="group block relative cursor-pointer mt-4 mb-4">
+                            
+                            <div class="absolute top-0 right-0 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand z-20 shadow-lg">
+                                <i class="ph-bold ph-arrows-out-simple"></i>
+                            </div>
+
+                            <div class="flex gap-4">
+                                @if (!string.IsNullOrEmpty(review.PosterPath))
+                                {
+                                    <img src="https://image.tmdb.org/t/p/w200/@review.PosterPath" class="w-20 rounded-xl object-cover shadow-[0_8px_20px_rgba(0,0,0,0.5)] border border-white/5">
+                                }
+                                else
+                                {
+                                    <div class="w-20 h-28 bg-white/5 rounded-xl flex items-center justify-center border border-white/5"><i class="ph ph-film text-gray-500 text-2xl"></i></div>
+                                }
+
+                                <div class="flex flex-col justify-center flex-1">
+                                    <h3 class="font-bold text-white text-lg leading-tight mb-1 group-hover:text-brand transition-colors">
+                                        @review.MovieTitle
+                                    </h3>
+                                    <div class="flex gap-0.5 text-brand text-sm mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= review.Rating) { <i class="ph-fill ph-star"></i> }
+                                            else if (i - 0.5 <= review.Rating) { <i class="ph-fill ph-star-half"></i> }
+                                            else { <i class="ph ph-star text-gray-600"></i> }
+                                        }
+                                    </div>
+                                    <p class="text-xs text-gray-300 leading-relaxed line-clamp-2">
+                                        @review.Content
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <div class="flex items-center justify-between w-full border-t border-white/5 pt-4 relative z-10">
+                            
+                            <a href="/Review/Details/@review.Id#comments" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group text-gray-500">
+                                <i class="ph ph-chat-circle text-lg group-hover:text-brand transition-colors"></i>
+                                <span class="text-xs font-medium">@review.CommentsCount</span>
+                            </a>
+                            
+                            <button onclick="toggleLike(event, '@review.Id', this)" class="flex items-center gap-1.5 hover:text-red-500 transition-colors cursor-pointer group text-gray-500">
+                                @if (isLiked)
+                                {
+                                    <i class="heart-filled ph-fill ph-heart text-red-500 text-lg group-hover:text-red-500 transition-colors"></i>
+                                    <i class="heart-outline ph ph-heart text-lg hidden"></i>
+                                }
+                                else
+                                {
+                                    <i class="heart-filled ph-fill ph-heart text-red-500 text-lg hidden"></i>
+                                    <i class="heart-outline ph ph-heart text-lg group-hover:text-red-500 transition-colors"></i>
+                                }
+                                <span class="like-count text-xs font-medium @(isLiked ? "text-red-500" : "")">@review.LikesCount</span>
+                            </button>
+
+                        </div>
+
+                    </div>
+                }
+            </div>
+
+            <div id="infinite-scroll-trigger" class="py-8 flex flex-col items-center justify-center opacity-70 transition-opacity">
+                <i id="loading-spinner" class="ph-bold ph-spinner animate-spin text-3xl text-brand hidden"></i>
+                
+                <div id="end-of-feed" class="hidden text-center mt-2">
+                    <i class="ph-duotone ph-film-strip text-4xl text-brand mb-3"></i>
+                    <h3 class="font-display font-bold text-white text-lg">As cortinas se fecharam! 🎬</h3>
+                    <p class="text-xs text-gray-500 mt-1 max-w-xs">Sobem os créditos... Você chegou ao final do feed. Volte mais tarde para mais novidades!</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="flex flex-col items-center justify-center py-16 text-center">
+                <i class="ph-duotone ph-film-slate text-5xl text-brand mb-4"></i>
+                <h3 class="text-xl font-bold text-white mb-2">O seu Feed está vazio</h3>
+                <p class="text-gray-400 text-sm mb-6 max-w-sm">
+                    Ainda não há resenhas recentes ou a pessoa que você segue ainda não postou nada.
+                </p>
+                <a href="/Review/Create" class="px-6 py-2 bg-brand text-white font-bold rounded-full hover:bg-orange-600 shadow-lg transition-colors">Escrever Resenha</a>
+            </div>
+        }
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        async function toggleFollow(targetId, btnElement) {
+            try {
+                const formData = new FormData();
+                formData.append('targetUserId', targetId);
+
+                const response = await fetch('/Account/ToggleFollow', { method: 'POST', body: formData });
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.isFollowing) {
+                        btnElement.className = "px-4 py-1.5 rounded-full border border-brand text-brand bg-transparent text-xs font-bold transition-colors hover:bg-brand/10 z-10 relative";
+                        btnElement.innerText = "Seguindo";
+                    } else {
+                        btnElement.className = "px-4 py-1.5 rounded-full border border-brand bg-brand text-white text-xs font-bold transition-colors hover:bg-orange-600 shadow-[0_0_10px_rgba(255,85,0,0.3)] z-10 relative";
+                        btnElement.innerText = "Seguir";
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function toggleLike(event, reviewId, element) {
+            event.preventDefault(); 
+            event.stopPropagation();
+            try {
+                const formData = new FormData();
+                formData.append('reviewId', reviewId);
+
+                const response = await fetch('/Review/ToggleLike', { method: 'POST', body: formData });
+                const result = await response.json();
+
+                if (result.success) {
+                    const heartOutline = element.querySelector('.heart-outline');
+                    const heartFilled = element.querySelector('.heart-filled');
+                    const countSpan = element.querySelector('.like-count');
+
+                    if (result.isLiked) {
+                        heartOutline.classList.add('hidden');
+                        heartFilled.classList.remove('hidden');
+                        countSpan.classList.add('text-red-500');
+                    } else {
+                        heartOutline.classList.remove('hidden');
+                        heartFilled.classList.add('hidden');
+                        countSpan.classList.remove('text-red-500');
+                    }
+                    countSpan.innerText = result.likesCount;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        let skipCount = 5; 
+        let isLoading = false;
+        let hasMore = true;
+        
+        const currentFilter = '@ViewBag.CurrentFilter';
+        const currentUserId = '@(ViewBag.CurrentUser?.Id ?? "")';
+
+        const scrollTrigger = document.getElementById('infinite-scroll-trigger');
+        const spinner = document.getElementById('loading-spinner');
+        const endOfFeed = document.getElementById('end-of-feed');
+        const feedContainer = document.getElementById('feed-container');
+
+        if (scrollTrigger && feedContainer) {
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !isLoading && hasMore) {
+                    loadMoreFeedReviews();
+                }
+            }, { rootMargin: '100px' });
+
+            observer.observe(scrollTrigger);
+        }
+
+        async function loadMoreFeedReviews() {
+            isLoading = true;
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch(`/Home/LoadFeedReviewsAjax?skip=${skipCount}&filter=${currentFilter}`);
+                const newReviews = await response.json();
+
+                if (newReviews.length === 0) {
+                    hasMore = false;
+                    spinner.classList.add('hidden');
+                    endOfFeed.classList.remove('hidden'); 
+                    return;
+                }
+
+                newReviews.forEach(r => {
+                    const photoHtml = r.authorPhoto
+                        ? `<img src="${r.authorPhoto}" class="w-10 h-10 rounded-full object-cover border border-white/10 group-hover/user:border-brand/50 transition-colors">`
+                        : `<div class="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center border border-brand/30 group-hover/user:border-brand/50 transition-colors"><i class="ph-fill ph-user text-sm text-brand"></i></div>`;
+
+                    let starsHtml = '';
+                    for(let i=1; i<=5; i++) {
+                        if (i <= r.rating) starsHtml += '<i class="ph-fill ph-star"></i>';
+                        else if (i - 0.5 <= r.rating) starsHtml += '<i class="ph-fill ph-star-half"></i>';
+                        else starsHtml += '<i class="ph ph-star text-gray-600"></i>';
+                    }
+
+                    let followBtnHtml = '';
+                    if (currentUserId !== '' && r.userId !== currentUserId) {
+                        if (r.isFollowing) {
+                            followBtnHtml = `<button onclick="toggleFollow('${r.userId}', this)" class="px-4 py-1.5 rounded-full border border-brand text-brand bg-transparent text-xs font-bold transition-colors hover:bg-brand/10 z-10 relative">Seguindo</button>`;
+                        } else {
+                            followBtnHtml = `<button onclick="toggleFollow('${r.userId}', this)" class="px-4 py-1.5 rounded-full border border-brand bg-brand text-white text-xs font-bold transition-colors hover:bg-orange-600 shadow-[0_0_10px_rgba(255,85,0,0.3)] z-10 relative">Seguir</button>`;
+                        }
+                    }
+
+                    const posterHtml = r.posterPath
+                        ? `<img src="https://image.tmdb.org/t/p/w200/${r.posterPath}" class="w-20 rounded-xl object-cover shadow-[0_8px_20px_rgba(0,0,0,0.5)] border border-white/5">`
+                        : `<div class="w-20 h-28 bg-white/5 rounded-xl flex items-center justify-center border border-white/5"><i class="ph ph-film text-gray-500 text-2xl"></i></div>`;
+
+                    const likeFilledClass = r.isLiked ? "heart-filled ph-fill ph-heart text-red-500 text-lg" : "heart-filled ph-fill ph-heart text-red-500 text-lg hidden";
+                    const likeOutlineClass = r.isLiked ? "heart-outline ph ph-heart text-lg hidden" : "heart-outline ph ph-heart text-lg group-hover:text-red-500 transition-colors";
+                    const likeTextClass = r.isLiked ? "text-red-500" : "";
+
+                    const cardHtml = `
+                        <div class="block relative bg-panel border border-white/5 rounded-2xl p-5 shadow-sm mt-4 animate-fade-in">
+                            <div class="flex justify-between items-start mb-4">
+                                <a href="/Account/Profile?id=${r.userId}" class="flex items-center gap-3 cursor-pointer group/user z-10 relative">
+                                    ${photoHtml}
+                                    <div>
+                                        <h3 class="font-bold text-white text-sm group-hover/user:text-brand transition-colors">${r.authorName}</h3>
+                                        <p class="text-[10px] text-gray-500">@@${r.authorUsername}</p>
+                                    </div>
+                                </a>
+                                ${followBtnHtml}
+                            </div>
+                            
+                            <a href="/Review/Details/${r.id}" class="group block relative cursor-pointer mt-4 mb-4">
+                                <div class="absolute top-0 right-0 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand z-20 shadow-lg">
+                                    <i class="ph-bold ph-arrows-out-simple"></i>
+                                </div>
+                                <div class="flex gap-4">
+                                    ${posterHtml}
+                                    <div class="flex flex-col justify-center flex-1">
+                                        <h3 class="font-bold text-white text-lg leading-tight mb-1 group-hover:text-brand transition-colors">${r.movieTitle}</h3>
+                                        <div class="flex gap-0.5 text-brand text-sm mb-2">${starsHtml}</div>
+                                        <p class="text-xs text-gray-300 leading-relaxed line-clamp-2">${r.content}</p>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <div class="flex items-center justify-between w-full border-t border-white/5 pt-4 relative z-10">
+                                <a href="/Review/Details/${r.id}#comments" class="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer group text-gray-500">
+                                    <i class="ph ph-chat-circle text-lg group-hover:text-brand transition-colors"></i>
+                                    <span class="text-xs font-medium">${r.commentsCount}</span>
+                                </a>
+                                <button onclick="toggleLike(event, '${r.id}', this)" class="flex items-center gap-1.5 hover:text-red-500 transition-colors cursor-pointer group text-gray-500">
+                                    <i class="${likeFilledClass}"></i>
+                                    <i class="${likeOutlineClass}"></i>
+                                    <span class="text-xs font-medium like-count ${likeTextClass}">${r.likesCount}</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    feedContainer.insertAdjacentHTML('beforeend', cardHtml);
+                });
+
+                skipCount += newReviews.length;
+
+            } catch (error) {
+                console.error("Erro ao carregar mais resenhas:", error);
+            } finally {
+                isLoading = false;
+                spinner.classList.add('hidden');
+            }
+        }
+    </script>
+}

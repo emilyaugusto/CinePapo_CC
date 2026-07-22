@@ -1,0 +1,2434 @@
+﻿@{
+
+    ViewData["Title"] = "CinePapo — A Comunidade dos Cinéfilos";
+
+    Layout = null;
+
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="CinePapo é a comunidade premium para quem respira cinema. Resenhas, listas, descobertas e conexões com cinéfilos de verdade." />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/img/favicon.png" />
+
+    <!--FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800&family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+    <!-- LIBRARIES -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+    <script src="https://unpkg.com/@@phosphor-icons/web@@2.1.0"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --black-deep: #050505;
+            --black-card: #111111;
+            --black-lift: #161616;
+            --black-border: #1e1e1e;
+            --black-hover: #242424;
+            --orange: #E85102;
+            --orange-dim: #b83e01;
+            --orange-bright: #ff5c0a;
+            --orange-glow: rgba(232,81,2,.15);
+            --orange-border: rgba(232,81,2,.3);
+            --white: #ffffff;
+            --white-90: rgba(255,255,255,.9);
+            --white-60: rgba(255,255,255,.6);
+            --white-35: rgba(255,255,255,.35);
+            --white-12: rgba(255,255,255,.12);
+            --white-06: rgba(255,255,255,.06);
+            --font-head: 'Barlow Condensed', 'Barlow', sans-serif;
+            --font-body: 'Barlow', sans-serif;
+            --font-ui: 'Inter', system-ui, sans-serif;
+            --ease-out: cubic-bezier(.16,1,.3,1);
+            --ease-back: cubic-bezier(.34,1.56,.64,1);
+            --ease-in-out: cubic-bezier(.65,0,.35,1);
+            --r-xs: 4px;
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 18px;
+            --r-xl: 28px;
+        }
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+        }
+        body {
+            background: var(--black);
+            color: var(--white-90);
+            font-family: var(--font-body);
+            font-weight: 400;
+            overflow-x: hidden;
+        }
+        ::selection {
+            background: var(--orange);
+            color: #fff;
+        }
+        img {
+            display: block;
+            max-width: 100%;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        button {
+            border: none;
+            background: none;
+            font-family: inherit;
+        }
+        ul {
+            list-style: none;
+        }
+        /* ═══════ NOISE ═════════ */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: .022;
+            pointer-events: none;
+            z-index: 9990;
+        }
+        /* ══════════ SCROLLBAR ═════════════ */
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--black);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--orange-dim);
+            border-radius: 2px;
+        }
+        .wrap {
+            width: min(1200px, 100% - 3rem);
+            margin-inline: auto;
+        }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            font-family: var(--font-head);
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--orange);
+            padding: .3rem .9rem;
+            border: 1px solid var(--orange-border);
+            border-radius: var(--r-xs);
+            background: var(--orange-glow);
+        }
+            .pill::before {
+                content: '◄';
+                font-size: .6rem;
+            }
+        .sec-title {
+            font-family: var(--font-head);
+            font-size: clamp(2.6rem, 5.5vw, 5rem);
+            font-weight: 900;
+            line-height: .95;
+            letter-spacing: -.01em;
+            text-transform: uppercase;
+            color: var(--white);
+        }
+            .sec-title em {
+                font-style: normal;
+                color: var(--orange);
+            }
+        .sec-sub {
+            font-family: var(--font-ui);
+            font-size: clamp(.88rem, 1.4vw, 1rem);
+            color: var(--white-60);
+            line-height: 1.75;
+            font-weight: 300;
+        }
+        .divider {
+            height: 1px;
+            background: var(--black-border);
+        }
+        [data-r] {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity .7s var(--ease-out), transform .7s var(--ease-out);
+        }
+            [data-r].on {
+                opacity: 1;
+                transform: none;
+            }
+            [data-r][data-d="1"] {
+                transition-delay: .08s;
+            }
+            [data-r][data-d="2"] {
+                transition-delay: .16s;
+            }
+            [data-r][data-d="3"] {
+                transition-delay: .24s;
+            }
+            [data-r][data-d="4"] {
+                transition-delay: .32s;
+            }
+            [data-r][data-d="5"] {
+                transition-delay: .40s;
+            }
+        /* ═════════   BUTTONS ══════════ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .6rem;
+            font-family: var(--font-head);
+            font-size: .9rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: .85rem 2rem;
+            border-radius: var(--r-xs);
+            transition: transform .25s var(--ease-out), box-shadow .25s, background .2s;
+            position: relative;
+            overflow: hidden;
+        }
+            .btn::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: rgba(255,255,255,.08);
+                opacity: 0;
+                transition: opacity .2s;
+            }
+            .btn:hover::before {
+                opacity: 1;
+            }
+            .btn:hover {
+                transform: translateY(-2px);
+            }
+            .btn:active {
+                transform: translateY(0);
+            }
+        .btn-orange {
+            background: var(--orange);
+            color: #fff;
+            box-shadow: 0 0 0 0 rgba(232,81,2,0);
+        }
+            .btn-orange:hover {
+                background: var(--orange-bright);
+                box-shadow: 0 8px 32px rgba(232,81,2,.35);
+            }
+        .btn-outline {
+            border: 1.5px solid var(--white-12);
+            color: var(--white-90);
+            background: transparent;
+        }
+            .btn-outline:hover {
+                border-color: var(--white-35);
+            }
+        .btn-ghost {
+            color: var(--orange);
+            font-size: .78rem;
+            padding: .5rem 0;
+            letter-spacing: .08em;
+        }
+            .btn-ghost i {
+                transition: transform .3s var(--ease-back);
+            }
+            .btn-ghost:hover i {
+                transform: translateX(6px);
+            }
+            .btn-ghost:hover {
+                transform: none;
+            }
+        /* ═════════ NAVBAR ═══════════ */
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.25rem 0;
+            transition: background .4s var(--ease-out), padding .4s, border-color .4s;
+            border-bottom: 1px solid transparent;
+        }
+            .nav.scrolled {
+                background: rgba(5,5,5,.94);
+                backdrop-filter: blur(20px) saturate(1.5);
+                padding: .85rem 0;
+                border-bottom-color: var(--black-border);
+            }
+        .nav__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav__logo img {
+            height: 20px;
+            width: auto;
+        }
+        .nav__links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-left: 2.5rem;
+        }
+            .nav__links a {
+                font-family: var(--font-head);
+                font-size: .78rem;
+                font-weight: 600;
+                letter-spacing: .1em;
+                text-transform: uppercase;
+                color: var(--white-60);
+                transition: color .2s;
+                position: relative;
+            }
+                .nav__links a::after {
+                    content: '';
+                    position: absolute;
+                    bottom: -4px;
+                    left: 0;
+                    width: 0;
+                    height: 2px;
+                    background: var(--orange);
+                    transition: width .25s var(--ease-out);
+                }
+                .nav__links a:hover {
+                    color: var(--white);
+                }
+                    .nav__links a:hover::after {
+                        width: 100%;
+                    }
+        .nav__ctas {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+            .nav__ctas .btn {
+                padding: .55rem 1.4rem;
+                font-size: .75rem;
+            }
+        .nav__burger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            padding: .4rem;
+        }
+            .nav__burger span {
+                width: 22px;
+                height: 2px;
+                background: var(--white-90);
+                display: block;
+                transition: all .3s;
+            }
+        @@media (max-width: 992px) {
+            .nav__links {
+                display: none;
+            }
+            .nav__burger {
+                display: flex;
+            }
+            .nav__ctas {
+                display: none;
+            }
+        }
+        /* ══════════  HERO ═══════════ */
+        .hero {
+            min-height: 100svh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero__grid {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background-image: linear-gradient(var(--black-border) 1px, transparent 1px), linear-gradient(90deg, var(--black-border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%);
+            opacity: .4;
+        }
+        .hero__blob {
+            position: absolute;
+            z-index: 0;
+            border-radius: 50%;
+            background: var(--orange);
+            filter: blur(120px);
+            opacity: .09;
+            pointer-events: none;
+        }
+        .hero__blob--1 {
+            width: 600px;
+            height: 600px;
+            top: -150px;
+            left: -100px;
+            animation: blob-drift1 12s ease-in-out infinite;
+        }
+        .hero__blob--2 {
+            width: 400px;
+            height: 400px;
+            bottom: -100px;
+            right: 5%;
+            animation: blob-drift2 14s ease-in-out infinite;
+        }
+        @@keyframes blob-drift1 {
+            0%, 100% {
+                transform: translate(0,0) scale(1);
+            }
+            50% {
+                transform: translate(60px, 40px) scale(1.1);
+            }
+        }
+        @@keyframes blob-drift2 {
+            0%, 100% {
+                transform: translate(0,0) scale(1);
+            }
+            50% {
+                transform: translate(-40px,-30px) scale(1.08);
+            }
+        }
+        .hero__bars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6vw;
+            min-height: 48px;
+            background: var(--black-deep);
+            z-index: 1;
+        }
+        .hero__bars--btm {
+            top: auto;
+            bottom: 0;
+        }
+        .hero__filmstrip {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 28px;
+            z-index: 2;
+            background: var(--black-deep);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        .hero__filmstrip-hole {
+            width: 10px;
+            height: 14px;
+            border-radius: 2px;
+            border: 1.5px solid rgba(255,255,255,.1);
+        }
+        .hero__content {
+            position: relative;
+            z-index: 3;
+            padding-top: 140px;
+            padding-bottom: 100px;
+            padding-left: 40px;
+        }
+        .hero__label {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            margin-bottom: 2rem;
+            animation: fade-up .7s .1s var(--ease-out) both;
+        }
+        .hero__label-bar {
+            width: 32px;
+            height: 3px;
+            background: var(--orange);
+        }
+        .hero__label-text {
+            font-family: var(--font-head);
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--orange);
+        }
+        .hero__title {
+            font-family: var(--font-head);
+            font-size: clamp(4.5rem, 10vw, 10.5rem);
+            font-weight: 900;
+            line-height: .9;
+            text-transform: uppercase;
+            letter-spacing: -.02em;
+            margin-bottom: 2rem;
+            max-width: 900px;
+        }
+            .hero__title .line {
+                overflow: hidden;
+                display: block;
+            }
+            .hero__title .line-in {
+                display: block;
+                transform: translateY(110%);
+                animation: slide-up .8s var(--ease-out) forwards;
+            }
+            .hero__title .line:nth-child(2) .line-in {
+                animation-delay: .08s;
+            }
+            .hero__title .line:nth-child(3) .line-in {
+                animation-delay: .16s;
+            }
+        @@keyframes slide-up {
+            to {
+                transform: translateY(0);
+            }
+        }
+        @@keyframes fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+        .hero__title .t-white {
+            color: var(--white);
+        }
+        .hero__title .t-orange {
+            color: var(--orange);
+        }
+        .hero__title .t-outline {
+            color: transparent;
+            -webkit-text-stroke: 2px var(--white-35);
+        }
+        .hero__sub {
+            font-family: var(--font-ui);
+            font-size: clamp(.95rem, 1.6vw, 1.1rem);
+            color: var(--white-60);
+            line-height: 1.7;
+            font-weight: 300;
+            max-width: 480px;
+            margin-bottom: 2.8rem;
+            animation: fade-up .7s .38s var(--ease-out) both;
+        }
+        .hero__ctas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 4.5rem;
+            animation: fade-up .7s .48s var(--ease-out) both;
+        }
+            .hero__ctas .btn {
+                padding: 1.05rem 2.4rem;
+                font-size: .88rem;
+            }
+        .hero__stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+        .hero__stat {
+            padding-right: 2.5rem;
+            border-right: 1px solid var(--black-border);
+        }
+            .hero__stat:last-child {
+                border-right: none;
+            }
+        .hero__stat-n {
+            font-family: var(--font-head);
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--white-90);
+            display: block;
+        }
+        .hero__stat-l {
+            font-family: var(--font-ui);
+            font-size: .68rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--white-35);
+            margin-top: .4rem;
+        }
+        @@media (max-width: 768px) {
+            .hero__filmstrip {
+                display: none;
+            }
+            .hero__stat {
+                padding-right: 0;
+                border-right: none;
+                width: 100%;
+            }
+            .hero__title {
+                font-size: clamp(2rem, 12vw, 4rem);
+            }
+        }
+        .hero__visual {
+            position: absolute;
+            right: 5%;
+            top: 50%;
+            transform: translateY(-48%);
+            z-index: 4;
+            animation: fade-up .8s .65s var(--ease-out) both;
+            display: none;
+        }
+        @@media (min-width: 1000px) {
+            .hero__visual {
+                display: block;
+            }
+        }
+        .frc {
+            width: 300px;
+            background: var(--black-card);
+            border: 1px solid var(--black-border);
+            border-radius: var(--r-lg);
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0,0,0,.7);
+            animation: frc-float 6s ease-in-out infinite;
+        }
+        @@keyframes frc-float {
+            0%, 100% {
+                transform: translateY(0) rotate(.4deg);
+            }
+            50% {
+                transform: translateY(-14px) rotate(-.4deg);
+            }
+        }
+        .frc__head {
+            background: var(--black-lift);
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid var(--black-border);
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+        }
+        .frc__poster {
+            width: 42px;
+            height: 60px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #1a0d2e, #0d1240);
+            flex-shrink: 0;
+        }
+            .frc__poster.p2 {
+                background: linear-gradient(135deg, #2e0d0d, #1a0808);
+            }
+            .frc__poster.p3 {
+                background: linear-gradient(135deg, #0d2e1a, #081a0d);
+            }
+        .frc__meta {
+            flex: 1;
+        }
+        .frc__movie {
+            font-family: var(--font-head);
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+        .frc__year {
+            font-size: .7rem;
+            color: var(--white-35);
+            margin-top: .1rem;
+        }
+        .frc__stars {
+            color: var(--orange);
+            font-size: .75rem;
+            margin-top: .2rem;
+        }
+        .frc__body {
+            padding: 1rem 1.2rem;
+        }
+        .frc__quote {
+            font-family: var(--font-ui);
+            font-size: .82rem;
+            font-style: italic;
+            color: var(--white-60);
+            line-height: 1.55;
+            border-left: 2px solid var(--orange);
+            padding-left: .8rem;
+        }
+        .frc__author {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            margin-top: .9rem;
+        }
+        .frc__av {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            font-size: .62rem;
+            font-weight: 800;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-family: var(--font-head);
+            text-transform: uppercase;
+        }
+        .av-o {
+            background: var(--orange);
+        }
+        .av-b {
+            background: #0ea5e9;
+        }
+        .av-p {
+            background: #8b5cf6;
+        }
+        .av-g {
+            background: #10b981;
+        }
+        .av-r {
+            background: #ef4444;
+        }
+        .av-y {
+            background: #f59e0b;
+        }
+        .frc__aname {
+            font-size: .78rem;
+            font-weight: 600;
+        }
+        .frc__asub {
+            font-size: .65rem;
+            color: var(--white-35);
+        }
+        .frc__likes {
+            margin-left: auto;
+            font-size: .7rem;
+            color: var(--white-35);
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+            .frc__likes i {
+                color: var(--orange);
+                font-size: .65rem;
+            }
+        .frc__foot {
+            padding: .8rem 1.2rem;
+            border-top: 1px solid var(--black-border);
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        .frc__action {
+            font-family: var(--font-head);
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--white-35);
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+            transition: color .2s;
+        }
+            .frc__action:hover {
+                color: var(--orange);
+            }
+            .frc__action i {
+                font-size: .65rem;
+            }
+        
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+        /* ════════ MARQUEE ════════ */
+        .marquee {
+            padding: 1rem 0;
+            background: var(--orange);
+            overflow: hidden;
+            position: relative;
+        }
+        .marquee__track {
+            display: flex;
+            width: max-content;
+            animation: marquee-run 22s linear infinite;
+        }
+            .marquee__track:hover {
+                animation-play-state: paused;
+            }
+        @@keyframes marquee-run {
+            to {
+                transform: translateX(-50%);
+            }
+        }
+        .marquee__item {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: 0 2rem;
+            white-space: nowrap;
+            font-family: var(--font-head);
+            font-size: .8rem;
+            font-weight: 800;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .marquee__sep {
+            opacity: .5;
+        }
+        /* ═══════ FEATURES ═════════ */
+        .features {
+            padding: 8rem 0;
+        }
+        .features__head {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.2rem;
+            margin-bottom: 4.5rem;
+            max-width: 620px;
+        }
+        .feat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--black-border);
+            border: 1px solid var(--black-border);
+            border-radius: var(--r-md);
+            overflow: hidden;
+        }
+        @@media (max-width: 860px) {
+            .feat-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @@media (max-width: 560px) {
+            .feat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .feat-card {
+            background: var(--black-card);
+            padding: 2.2rem 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: background .3s;
+        }
+            .feat-card:hover {
+                background: var(--black-lift);
+            }
+            .feat-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 0;
+                height: 3px;
+                background: var(--orange);
+                transition: width .4s var(--ease-out);
+            }
+            .feat-card:hover::before {
+                width: 100%;
+            }
+        .feat-card__num {
+            font-family: var(--font-head);
+            font-size: .68rem;
+            font-weight: 900;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--orange);
+            margin-bottom: 1.4rem;
+            opacity: .7;
+        }
+        .feat-card__ico {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--r-xs);
+            background: var(--orange-glow);
+            border: 1px solid var(--orange-border);
+            display: grid;
+            place-items: center;
+            color: var(--orange);
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+            transition: transform .35s var(--ease-back);
+        }
+        .feat-card:hover .feat-card__ico {
+            transform: scale(1.12) rotate(-4deg);
+        }
+        .feat-card__title {
+            font-family: var(--font-head);
+            font-size: 1.35rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .02em;
+            margin-bottom: .6rem;
+        }
+        .feat-card__text {
+            font-family: var(--font-ui);
+            font-size: .84rem;
+            color: var(--white-60);
+            line-height: 1.65;
+        }
+        /* ══════COMUNIDADE═══════════════════ */
+        .proof {
+            padding: 7rem 0;
+            background: var(--black-deep);
+        }
+        .proof__head {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: end;
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+        @@media (max-width: 680px) {
+            .proof__head {
+                grid-template-columns: 1fr;
+            }
+        }
+        .proof__right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1rem;
+        }
+        .proof-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1px;
+            background: var(--black-border);
+            border: 1px solid var(--black-border);
+            border-radius: var(--r-md);
+            overflow: hidden;
+        }
+        .proof-card {
+            background: var(--black-card);
+            padding: 1.8rem;
+            transition: background .3s;
+        }
+            .proof-card:hover {
+                background: var(--black-lift);
+            }
+        .proof-card__stars {
+            display: flex;
+            gap: .15rem;
+            margin-bottom: .9rem;
+        }
+            .proof-card__stars i {
+                font-size: .72rem;
+                color: var(--orange);
+            }
+        .proof-card__quote {
+            font-family: var(--font-ui);
+            font-size: .9rem;
+            font-style: italic;
+            color: var(--white-60);
+            line-height: 1.6;
+            margin-bottom: 1.4rem;
+        }
+        .proof-card__author {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+        .proof-card__name {
+            font-size: .84rem;
+            font-weight: 600;
+        }
+        .proof-card__handle {
+            font-size: .7rem;
+            color: var(--white-35);
+        }
+        .proof__numbers {
+            display: flex;
+            flex-wrap: wrap;
+            border-top: 1px solid var(--black-border);
+            margin-top: 1px;
+        }
+        .proof__num {
+            flex: 1;
+            min-width: 160px;
+            padding: 2rem 2rem;
+            background: var(--black-card);
+            border-right: 1px solid var(--black-border);
+        }
+            .proof__num:last-child {
+                border-right: none;
+            }
+        .proof__num-n {
+            font-family: var(--font-head);
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--white);
+        }
+            .proof__num-n .accent {
+                color: var(--orange);
+            }
+        .proof__num-l {
+            font-family: var(--font-ui);
+            font-size: .7rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--white-35);
+            margin-top: .35rem;
+        }
+        /* ═════════ DESCUBRA ════════════════ */
+        .disc {
+            padding: 8rem 0;
+        }
+        .disc__inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+        @@media (max-width: 860px) {
+            .disc__inner {
+                grid-template-columns: 1fr;
+            }
+        }
+        .disc__text {
+            display: flex;
+            flex-direction: column;
+            gap: 1.3rem;
+        }
+        .disc__mosaic {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 120px);
+            gap: 4px;
+            border-radius: var(--r-md);
+            overflow: hidden;
+            border: 1px solid var(--black-border);
+        }
+        .dm-cell {
+            position: relative;
+            overflow: hidden;
+            transition: transform .4s var(--ease-out);
+        }
+            .dm-cell:hover {
+                transform: scale(.98);
+                z-index: 2;
+            }
+        .dm-cell--tall {
+            grid-row: span 2;
+        }
+        .dm-cell--wide {
+            grid-column: span 2;
+        }
+        .dm-cell__bg {
+            position: absolute;
+            inset: 0;
+        }
+        .dc1 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlSaba7.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dc2 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enPvtRG6COoqSjM.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dc3 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/iuFNm761nb3p98YBMp238v3vXOX.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dc4 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/8Gxv2mEhG19m2JsCdPmUvCY1Y9r.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dc5 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/7WsyChQLEUX9Iu033ihMr9uS4GT.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dc6 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/q6y0Go1tsYKoBbtuou1Al57Z4GZ.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dc7 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/saF3H9BzbCfDXI4hRQI7DbrAFls.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dc8 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/d5NXSklfzZqc4tGqys7uLZI9UUE.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dc9 .dm-cell__bg {
+            background: url("https://image.tmdb.org/t/p/w500/v999867.jpg") center/cover no-repeat;
+            filter: brightness(0.7);
+        }
+        .dm-cell__label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: .6rem;
+            background: linear-gradient(to top, rgba(0,0,0,.9) 0%, transparent 100%);
+            font-family: var(--font-head);
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--white-90);
+        }
+        .dm-cell__score {
+            position: absolute;
+            top: .4rem;
+            right: .4rem;
+            background: var(--orange);
+            color: #fff;
+            font-family: var(--font-head);
+            font-size: .65rem;
+            font-weight: 800;
+            padding: .15rem .4rem;
+            border-radius: 3px;
+        }
+        .genre-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+        .gp {
+            font-family: var(--font-head);
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            padding: .35rem .85rem;
+            border-radius: var(--r-xs);
+            border: 1px solid var(--black-border);
+            color: var(--white-60);
+            background: var(--white-06);
+            transition: all .2s var(--ease-out);
+        }
+            .gp:hover {
+                border-color: var(--orange-border);
+                color: var(--orange);
+                background: var(--orange-glow);
+                transform: translateY(-2px);
+            }
+        /* ══════════  FAVORITOS ═════════════ */
+        .wl {
+            padding: 8rem 0;
+            background: var(--black-deep);
+        }
+        .wl__inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+        @@media (max-width: 860px) {
+            .wl__inner {
+                grid-template-columns: 1fr;
+            }
+            .wl__vis {
+                order: -1;
+            }
+        }
+        .wl-mock {
+            background: var(--black-card);
+            border: 1px solid var(--black-border);
+            border-radius: var(--r-lg);
+            overflow: hidden;
+            box-shadow: 0 32px 80px rgba(0,0,0,.6);
+        }
+        .wl-mock__bar {
+            background: var(--black-lift);
+            padding: .9rem 1.2rem;
+            border-bottom: 1px solid var(--black-border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .wl-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .d-r {
+            background: #ff5f57;
+        }
+        .d-y {
+            background: #febc2e;
+        }
+        .d-g {
+            background: #28c840;
+        }
+        .wl-mock__bartitle {
+            font-family: var(--font-head);
+            font-size: .75rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--white-35);
+            margin-left: .3rem;
+        }
+        .wl-mock__tabs {
+            display: flex;
+            gap: 0;
+            padding: .75rem 1.2rem 0;
+            border-bottom: 1px solid var(--black-border);
+        }
+        .wl-tab {
+            padding: .45rem 1.1rem;
+            font-family: var(--font-head);
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--white-35);
+            border-bottom: 2px solid transparent;
+            transition: color .2s, border-color .2s;
+        }
+            .wl-tab.act {
+                color: var(--orange);
+                border-bottom-color: var(--orange);
+            }
+        .wl-list {
+            padding: .4rem 0;
+        }
+        .wl-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: .85rem 1.2rem;
+            transition: background .2s;
+        }
+            .wl-item:hover {
+                background: var(--black-lift);
+            }
+        .wl-thumb {
+            width: 36px;
+            height: 50px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .wt1 {
+            background: linear-gradient(135deg,#1a0d40,#0d0828);
+        }
+        .wt2 {
+            background: linear-gradient(135deg,#400d0d,#1a0808);
+        }
+        .wt3 {
+            background: linear-gradient(135deg,#0d3b1a,#081a0d);
+        }
+        .wt4 {
+            background: linear-gradient(135deg,#2e1c00,#0a0800);
+        }
+        .wt5 {
+            background: linear-gradient(135deg,#0d0d40,#08081a);
+        }
+        .wl-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .wl-info__title {
+            font-family: var(--font-head);
+            font-size: .9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .wl-info__dir {
+            font-size: .7rem;
+            color: var(--white-35);
+            margin-top: .1rem;
+        }
+        .wl-badge {
+            flex-shrink: 0;
+            padding: .2rem .6rem;
+            font-family: var(--font-head);
+            font-size: .6rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            border-radius: 3px;
+        }
+        .wb-want {
+            background: rgba(232,81,2,.12);
+            color: var(--orange);
+            border: 1px solid rgba(232,81,2,.25);
+        }
+        .wb-done {
+            background: rgba(16,185,129,.1);
+            color: #10b981;
+            border: 1px solid rgba(16,185,129,.2);
+        }
+        .wb-col {
+            background: rgba(139,92,246,.1);
+            color: #8b5cf6;
+            border: 1px solid rgba(139,92,246,.2);
+        }
+        .wl__perks {
+            display: flex;
+            flex-direction: column;
+            gap: .8rem;
+            margin-top: .5rem;
+        }
+        .wl__perk {
+            display: flex;
+            gap: .9rem;
+            align-items: flex-start;
+            font-family: var(--font-ui);
+            font-size: .85rem;
+            color: var(--white-60);
+        }
+            .wl__perk i {
+                color: var(--orange);
+                font-size: .75rem;
+                margin-top: .25rem;
+                flex-shrink: 0;
+            }
+        /* ══════════  FRASE CINEMA ═════════════ */
+        .cine-break {
+            background: var(--orange);
+            padding: 5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+            .cine-break::before {
+                content: '◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄◄';
+                position: absolute;
+                top: -1rem;
+                left: 0;
+                right: 0;
+                font-family: var(--font-head);
+                font-size: 6rem;
+                font-weight: 900;
+                color: rgba(0,0,0,.06);
+                letter-spacing: .3em;
+                white-space: nowrap;
+                overflow: hidden;
+                pointer-events: none;
+                line-height: 1;
+            }
+        .cine-break__inner {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 780px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .cine-break__quote {
+            font-family: var(--font-head);
+            font-size: clamp(2rem, 4.5vw, 4rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            line-height: .95;
+            letter-spacing: -.02em;
+            color: #fff;
+        }
+        .cine-break__attr {
+            font-family: var(--font-ui);
+            font-size: .8rem;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.6);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+            .cine-break__attr::before, .cine-break__attr::after {
+                content: '';
+                width: 32px;
+                height: 1px;
+                background: rgba(255,255,255,.3);
+            }
+        .cine-break .btn {
+            background: #fff;
+            color: var(--orange);
+        }
+            .cine-break .btn:hover {
+                background: rgba(255,255,255,.9);
+            }
+        /* ════════  COMO TRABALHAMOS ══════ */
+        .hiw {
+            padding: 8rem 0;
+            background: var(--black-deep);
+        }
+        .hiw__head {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.2rem;
+            margin-bottom: 0rem;
+            max-width: 520px;
+        }
+        .hiw-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--black-border);
+            border: 1px solid var(--black-border);
+            border-radius: var(--r-md);
+            overflow: hidden;
+        }
+        @@media (max-width: 760px) {
+            .hiw-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @@media (max-width: 480px) {
+            .hiw-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .hiw-step {
+            background: var(--black-card);
+            padding: 2.2rem 1.8rem;
+            position: relative;
+            overflow: hidden;
+            transition: background .3s;
+        }
+            .hiw-step:hover {
+                background: var(--black-lift);
+            }
+        .hiw-step__n {
+            font-family: var(--font-head);
+            font-size: 4rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--orange);
+            opacity: .15;
+            margin-bottom: 1.2rem;
+        }
+        .hiw-step__title {
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: .6rem;
+        }
+        .hiw-step__text {
+            font-family: var(--font-ui);
+            font-size: .82rem;
+            color: var(--white-60);
+            line-height: 1.6;
+        }
+        .hiw-step__bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--orange);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .5s var(--ease-out);
+        }
+        .hiw-step:hover .hiw-step__bar {
+            transform: scaleX(1);
+        }
+        /* ════════  FAQ ═════════ */
+        .faq {
+            padding: 8rem 0;
+        }
+        .faq__inner {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 5rem;
+            align-items: start;
+        }
+        @@media (max-width: 760px) {
+            .faq__inner {
+                grid-template-columns: 1fr;
+            }
+        }
+        .faq__left {
+            position: sticky;
+            top: 6rem;
+        }
+        .faq__left-head {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .faq-it {
+            border-bottom: 1px solid var(--black-border);
+            overflow: hidden;
+        }
+            .faq-it:first-child {
+                border-top: 1px solid var(--black-border);
+            }
+        .faq-q {
+            width: 100%;
+            text-align: left;
+            padding: 1.3rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            font-family: var(--font-body);
+            font-size: .92rem;
+            font-weight: 600;
+            color: var(--white-90);
+            background: none;
+            transition: color .2s;
+        }
+            .faq-q:hover {
+                color: var(--orange);
+            }
+        .faq-it.open .faq-q {
+            color: var(--orange);
+        }
+        .faq-ico {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 1.5px solid var(--black-border);
+            display: grid;
+            place-items: center;
+            font-size: .68rem;
+            color: var(--white-35);
+            flex-shrink: 0;
+            transition: transform .35s var(--ease-back), border-color .2s, color .2s;
+        }
+        .faq-it.open .faq-ico {
+            transform: rotate(45deg);
+            border-color: var(--orange-border);
+            color: var(--orange);
+        }
+        .faq-a {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .45s var(--ease-out);
+        }
+        .faq-it.open .faq-a {
+            max-height: 280px;
+        }
+        .faq-a__in {
+            padding: 0 0 1.3rem;
+            font-family: var(--font-ui);
+            font-size: .85rem;
+            color: var(--white-60);
+            line-height: 1.7;
+        }
+        /* ═════════ CTA FINAL ═════════════ */
+        .fcta {
+            background: var(--black-deep);
+            border-top: 1px solid var(--black-border);
+            padding: 8rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+            .fcta::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(ellipse 60% 70% at 50% 100%, rgba(232,81,2,.07) 0%, transparent 70%);
+            }
+        .fcta__inner {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 640px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.8rem;
+        }
+        .fcta__title {
+            font-family: var(--font-head);
+            font-size: clamp(3.5rem, 7vw, 7rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            line-height: .9;
+            letter-spacing: -.02em;
+        }
+            .fcta__title .t-o {
+                color: var(--orange);
+            }
+            .fcta__title .t-outline {
+                color: transparent;
+                -webkit-text-stroke: 2px rgba(255,255,255,.2);
+            }
+        .fcta__sub {
+            font-family: var(--font-ui);
+            font-size: .95rem;
+            color: var(--white-60);
+            line-height: 1.7;
+            max-width: 420px;
+        }
+        .fcta__btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+            .fcta__btns .btn {
+                padding: 1.1rem 2.8rem;
+                font-size: .88rem;
+            }
+        .fcta__note {
+            font-family: var(--font-ui);
+            font-size: .72rem;
+            color: var(--white-35);
+            letter-spacing: .04em;
+        }
+        /* ═══════ FOOTER ═══════════════ */
+        .footer {
+            background: var(--black-deep);
+            border-top: 1px solid var(--black-border);
+            padding: 4.5rem 0 2.5rem;
+        }
+        .footer__grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+        @@media (max-width: 760px) {
+            .footer__grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @@media (max-width: 480px) {
+            .footer__grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .footer__brand-text {
+            font-family: var(--font-ui);
+            font-size: .82rem;
+            color: var(--white-35);
+            line-height: 1.65;
+            max-width: 230px;
+            margin-top: .9rem;
+        }
+        .footer__socials {
+            display: flex;
+            gap: .6rem;
+            margin-top: 1.3rem;
+        }
+        .footer__social {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--black-border);
+            border-radius: var(--r-xs);
+            display: grid;
+            place-items: center;
+            font-size: .8rem;
+            color: var(--white-35);
+            transition: all .2s;
+        }
+            .footer__social:hover {
+                border-color: var(--orange-border);
+                color: var(--orange);
+                background: var(--orange-glow);
+            }
+        .footer__col-h {
+            font-family: var(--font-head);
+            font-size: .65rem;
+            font-weight: 800;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: var(--white-35);
+            margin-bottom: 1.1rem;
+        }
+        .footer__links {
+            display: flex;
+            flex-direction: column;
+            gap: .65rem;
+        }
+            .footer__links a {
+                font-family: var(--font-ui);
+                font-size: .82rem;
+                color: var(--white-35);
+                transition: color .2s;
+            }
+                .footer__links a:hover {
+                    color: var(--white);
+                }
+        .footer__bottom {
+            border-top: 1px solid var(--black-border);
+            padding-top: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .footer__copy {
+            font-family: var(--font-ui);
+            font-size: .73rem;
+            color: var(--white-35);
+        }
+        /* TMDB - ATRIBUIÇÕES */
+        .tmdb-attr {
+            display: flex;
+            align-items: center;
+            gap: .55rem;
+            font-family: var(--font-ui);
+            font-size: .65rem;
+            color: rgba(255,255,255,.18);
+            letter-spacing: .02em;
+        }
+        .tmdb-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            padding: .18rem .5rem;
+            border: 1px solid rgba(1,180,228,.15);
+            border-radius: 3px;
+            font-size: .6rem;
+            font-weight: 600;
+            letter-spacing: .05em;
+            color: rgba(1,180,228,.5);
+            transition: opacity .3s;
+            opacity: .7;
+        }
+            .tmdb-badge:hover {
+                opacity: 1;
+            }
+        .tmdb-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #01b4e4;
+            flex-shrink: 0;
+        }
+
+</style>
+
+</head>
+
+<body>
+
+    <header class="nav" id="nav">
+        <div class="wrap">
+            <nav class="nav__inner">
+                <a href="/" class="nav__logo" aria-label="CinePapo">
+                    <img src="/img/logo_comprida.png" alt="CinePapo" />
+                </a>
+
+                <ul class="nav__links">
+                    <li><a href="#features">Funcionalidades</a></li>
+                    <li><a href="#watchlist">Watchlist</a></li>
+                    <li><a href="#discovery">Descobrir</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+
+                <div class="nav__ctas">
+                    <a class="btn btn-outline" href="/Account/Login">Entrar</a>
+                    <a class="btn btn-orange" href="/Account/Register">◄ Começar grátis</a>
+                </div>
+
+                <button class="nav__burger" aria-label="Menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- ═══════════════════════════════════════════════ HERO -->
+        <section class="hero" id="hero">
+            <!-- Fundo Animado -->
+            <div class="hero__grid"></div>
+            <div class="hero__blob hero__blob--1"></div>
+            <div class="hero__blob hero__blob--2"></div>
+            <div class="hero__bars"></div>
+            <div class="hero__bars hero__bars--btm"></div>
+
+            <!-- Rolo de Filme Lateral -->
+            <div class="hero__filmstrip" aria-hidden="true">
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+                <div class="hero__filmstrip-hole"></div>
+            </div>
+
+            <div class="hero__content wrap">
+
+                <h1 class="hero__title">
+                    <span class="line"><span class="line-in t-white">Cinema</span></span>
+                    <span class="line"><span class="line-in t-orange">é papo</span></span>
+                    <span class="line"><span class="line-in t-outline">sério.</span></span>
+                </h1>
+
+                <div class="hero__ctas">
+                    <a class="btn btn-orange bg-brand text-white font-bold rounded-full hover:bg-orange-600 transition-all shadow-[0_0_15px_rgba(255,85,0,0.3)]" href="/Account/Register">
+                        Criar conta grátis
+                    </a>
+                    <a class="btn btn-outline border border-white/20 text-white font-bold rounded-full hover:bg-white/10 transition-colors" href="/Account/Login">
+                        Já tenho conta
+                    </a>
+                </div>
+
+                <div class="hero__stats" data-r data-d="4">
+                    <div class="hero__stat">
+                        <span class="hero__stat-n">API TMDB</span>
+                        <div class="hero__stat-l">Base de dados global</div>
+                    </div>
+                    <div class="hero__stat">
+                        <span class="hero__stat-n">100% Real</span>
+                        <div class="hero__stat-l">Comunidade orgânica</div>
+                    </div>
+                    <div class="hero__stat">
+                        <span class="hero__stat-n">Smart Feed</span>
+                        <div class="hero__stat-l">Recomendações precisas</div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ═══════════════════════════════════════════ MARQUEE -->
+
+        <div class="marquee" aria-hidden="true">
+            <div class="marquee__track" id="mq">
+                <div class="marquee__item">Resenhas <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Watchlists <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Comunidade <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Descoberta <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Avaliações <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Tendências <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Coleções <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Cinema Brasileiro <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Resenhas <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Watchlists <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Comunidade <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Descoberta <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Avaliações <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Tendências <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Coleções <span class="marquee__sep">◄</span></div>
+                <div class="marquee__item">Cinema Brasileiro <span class="marquee__sep">◄</span></div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ FEATURES -->
+        <section class="features" id="features">
+
+            <div class="wrap">
+
+                <div class="features__head">
+                    <span class="pill" data-r>O que temos</span>
+                    <h2 class="sec-title" data-r data-d="1">A plataforma<br /><em>feita para</em><br />cinéfilos</h2>
+                </div>
+
+                <div class="feat-grid">
+                    <div class="feat-card" data-r data-d="2">
+                        <div class="feat-card__ico"><i class="ph-bold ph-users-three text-5xl text-brand mb-2 block"></i></div>
+                        <h3 class="feat-card__title">Seguir & Conectar</h3>
+                        <p class="feat-card__text">Siga outros cinéfilos, veja o que eles estão assistindo e construa sua rede de conexões cinematográficas.</p>
+                    </div>
+
+                    <div class="feat-card" data-r data-d="3">
+                        <div class="feat-card__ico"><i class="ph-bold ph-list-bullets text-5xl text-brand mb-2 block"></i></div>
+                        <h3 class="feat-card__title">Listas Padrão</h3>
+                        <p class="feat-card__text">Organize sua vida cinéfila com nossas listas nativas: Visto, Quero Ver e seus Favoritos de sempre.</p>
+                    </div>
+
+                    <div class="feat-card" data-r data-d="4">
+                        <div class="feat-card__ico"><i class="ph-bold ph-star text-5xl text-brand mb-2 block"></i></div>
+                        <h3 class="feat-card__title">Resenhas Reais</h3>
+                        <p class="feat-card__text">Dê notas de 1 a 5 estrelas e escreva sua opinião. Sua voz importa na nossa comunidade.</p>
+                    </div>
+
+                    <div class="feat-card" data-r data-d="5">
+                        <div class="feat-card__ico"><i class="ph-bold ph-chat-centered-dots text-5xl text-brand mb-2 block"></i></div>
+                        <h3 class="feat-card__title">Interação Total</h3>
+                        <p class="feat-card__text">Comente nas resenhas dos seus amigos e receba feedback nas suas. O papo sobre cinema nunca para.</p>
+                    </div>
+
+                    <div class="feat-card" data-r data-d="6">
+                        <div class="feat-card__ico"><i class="ph-bold ph-compass text-5xl text-brand mb-2 block"></i></div>
+                        <h3 class="feat-card__title">Explorar</h3>
+                        <p class="feat-card__text">Descubra o que está em alta no mundo, procure filmes específicos e receba sugestões por gênero.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ═══════════════════════════════════ COMUNIDADE -->
+
+        <section class="proof" id="proof">
+
+            <div class="wrap">
+
+                <div class="proof__head">
+                    <div>
+                        <span class="pill" data-r>Comunidade</span>
+                        <h2 class="sec-title" style="margin-top:1.2rem;" data-r data-d="1">
+                            QUEM USA,<br /><em>RECOMENDA.</em>
+                        </h2>
+                    </div>
+
+                    <div class="proof__right" data-r data-d="2">
+                        <a class="btn btn-orange" href="/Account/Register">◄ Entrar na conversa</a>
+                    </div>
+                </div>
+
+                <div class="proof-grid">
+
+                    <div class="proof-card" data-r>
+
+                        <div class="proof-card__stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        <p class="proof-card__quote">CinePapo mudou como eu consumo cinema. Antes assistia sem critério, hoje cada filme vira uma análise de verdade.</p>
+
+                        <div class="proof-card__author">
+                            <div class="frc__av av-o">MF</div>
+                            <div><div class="proof-card__name">Mateus Figueiredo</div><div class="proof-card__handle">@@mfcinema · 847 filmes</div></div>
+                        </div>
+
+                    </div>
+
+                    <div class="proof-card" data-r data-d="1">
+
+                        <div class="proof-card__stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        <p class="proof-card__quote">As discussões aqui têm nível que você não acha em outro lugar. As pessoas viram o filme antes de opinar. Que conceito.</p>
+
+                        <div class="proof-card__author">
+                            <div class="frc__av av-r">LC</div>
+                            <div><div class="proof-card__name">Larissa Caldas</div><div class="proof-card__handle">@@larissafilmes · 1.2k filmes</div></div>
+                        </div>
+
+                    </div>
+
+                    <div class="proof-card" data-r data-d="2">
+
+                        <div class="proof-card__stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        <p class="proof-card__quote">Listas são viciantes. Tenho uma pra cada humor. Organize assim e nunca mais fica sem o que assistir na sexta.</p>
+
+                        <div class="proof-card__author">
+                            <div class="frc__av av-p">RS</div>
+                            <div><div class="proof-card__name">Rafael Sousa</div><div class="proof-card__handle">@@rafaelcine · 512 filmes</div></div>
+                        </div>
+
+                    </div>
+
+                    <div class="proof-card" data-r data-d="3">
+
+                        <div class="proof-card__stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        <p class="proof-card__quote">Segui alguns críticos aqui e descobri filmes que mudaram minha vida. Curadoria humana bate qualquer algoritmo.</p>
+
+                        <div class="proof-card__author">
+                            <div class="frc__av av-g">AC</div>
+                            <div><div class="proof-card__name">Ana Clara Melo</div><div class="proof-card__handle">@@anacinefila · 2.1k filmes</div></div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ═══════════════════════════════════════ DESCUBRA -->
+
+        <section class="disc" id="discovery">
+
+            <div class="wrap">
+
+                <div class="disc__inner">
+
+                    <div class="disc__text">
+
+                        <span class="pill" data-r>Descoberta</span>
+
+                        <h2 class="sec-title" data-r data-d="1">Seu próximo<br /><em>filme favorito</em><br />te espera.</h2>
+
+                        <p class="sec-sub" data-r data-d="2">
+                            O CinePapo foge das recomendações óbvias. Ele não olha apenas se o filme é de "Ação" ou "Comédia", ele entende o seu estilo. Nós indicamos filmes baseados nas notas que você dá, separando as histórias profundas daquelas mais rasas, para entregar dicas que realmente combinam com o seu momento.
+                        </p>
+
+                        <div class="genre-pills" data-r data-d="4">
+                            <span class="gp">Em Alta</span>
+                            <span class="gp">Cinema Mundial</span>
+                            <span class="gp">Filmes Premiados</span>
+                            <span class="gp">Dramas Intensos</span>
+                            <span class="gp">Clássicos dos Anos 70</span>
+                            <span class="gp">Para Pensar</span>
+                            <span class="gp">Terror Psicológico</span>
+                            <span class="gp">Comédia Romântica</span>
+                        </div>
+
+                        <div data-r data-d="5">
+
+                            <a class="btn btn-ghost" href="/Account/Register">
+                                Começar a descobrir <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    <div data-r data-d="2" aria-hidden="true">
+                        <div class="disc__mosaic">
+                            @{
+                                var heroMovies = ViewBag.HeroMovies as List<CinePapo.Models.TmdbMovie>;
+
+                                if (heroMovies != null && heroMovies.Count >= 9)
+                                {
+                                    for (int i = 0; i < 9; i++)
+                                    {
+                                        var movie = heroMovies[i];
+
+                                        string extraClass = "";
+                                        if (i == 0) extraClass = "dm-cell--tall";
+                                        else if (i == 3 || i == 8) extraClass = "dm-cell--wide";
+
+                                        string rating = movie.VoteAverage.HasValue ? (movie.VoteAverage.Value / 2.0).ToString("0.0").Replace(",", ".") : "0.0";
+
+                                        string imageUrl = "";
+                                        if (extraClass == "dm-cell--wide" && !string.IsNullOrEmpty(movie.BackdropPath))
+                                        {
+                                            imageUrl = $"https://image.tmdb.org/t/p/w500{movie.BackdropPath}";
+                                        }
+                                        else
+                                        {
+                                            imageUrl = !string.IsNullOrEmpty(movie.PosterPath)
+                                            ? $"https://image.tmdb.org/t/p/w500{movie.PosterPath}"
+                                            : "https://via.placeholder.com/500x750?text=Sem+Imagem";
+                                        }
+
+                                        <div class="dm-cell dc@(i + 1) @extraClass">
+                                            <div class="dm-cell__bg" style="background-image: url('@imageUrl'); background-size: cover; background-position: center;"></div>
+                                            <div class="dm-cell__score">@rating</div>
+                                            <div class="dm-cell__label">@movie.Title</div>
+                                        </div>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ═══════════════════════════════════════ FAVORITOSS -->
+
+        <section class="wl" id="lists">
+
+            <div class="wrap">
+
+                <div class="wl__inner">
+
+                    <div class="wl__vis" data-r>
+                        <div class="wl-mock">
+
+                            <div class="wl-mock__bar">
+                                <div class="wl-dot d-r"></div>
+                                <div class="wl-dot d-y"></div>
+                                <div class="wl-dot d-g"></div>
+                                <span class="wl-mock__bartitle">Minhas Listas — CinePapo</span>
+                            </div>
+
+                            <div class="wl-mock__tabs">
+                                <div class="wl-tab act">VISTO</div>
+                                <div class="wl-tab">QUERO VER</div>
+                                <div class="wl-tab">FAVORITOS</div>
+                            </div>
+
+                            <div class="wl-list">
+                                @{
+                                    var listMovies = ViewBag.HeroMovies as List<CinePapo.Models.TmdbMovie>;
+
+                                    if (listMovies != null && listMovies.Count >= 4)
+                                    {
+                                        var displayMovies = listMovies.Skip(Math.Max(0, listMovies.Count - 4)).Take(4).ToList();
+
+                                        foreach (var movie in displayMovies)
+                                        {
+                                            string posterUrl = !string.IsNullOrEmpty(movie.PosterPath)
+                                            ? $"https://image.tmdb.org/t/p/w200{movie.PosterPath}"
+                                            : "https://via.placeholder.com/200x300?text=Capa";
+
+                                            string year = !string.IsNullOrEmpty(movie.ReleaseDate) ? movie.ReleaseDate.Split("-")[0] : "N/A";
+
+                                            <div class="wl-item">
+                                                <div class="wl-thumb" style="background-image: url('@posterUrl'); background-size: cover; background-position: center; border-radius: 4px;"></div>
+                                                <div class="wl-info">
+                                                    <div class="wl-info__title line-clamp-1">@movie.Title</div>
+                                                    <div class="wl-info__dir text-gray-500">Filme · @year</div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:1.3rem;">
+
+                        <span class="pill" data-r>Listas & Watchlists</span>
+
+                        <h2 class="sec-title" data-r data-d="1">Organize a sua<br /><em>vida cinéfila.</em></h2>
+
+                        <p class="sec-sub" data-r data-d="2">Três categorias simples e poderosas para gerenciar tudo que você quer assistir, já assistiu e amou.</p>
+
+                        <div class="wl__perks" data-r data-d="3">
+                            <div class="wl__perk"><i class="fa-solid fa-check"></i>Organize filmes em Vistos, Quero Ver e Favoritos.</div>
+                            <div class="wl__perk"><i class="fa-solid fa-check"></i>Avalie, escreva resenhas e comente.</div>
+                            <div class="wl__perk"><i class="fa-solid fa-check"></i>Siga perfis e veja o Feed.</div>
+                        </div>
+
+                        <div data-r data-d="4">
+                            <a class="btn btn-ghost" href="/Account/Register">
+                                Adicionar filme a minha lista <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ═══════════════════════════════════ FRASE CINEMA -->
+
+        <section class="cine-break">
+
+            <div class="wrap">
+
+                <div class="cine-break__inner">
+
+                    <blockquote class="cine-break__quote" data-r>
+                        "O cinema é a arte de <br />mostrar o que está <br />acontecendo."
+                    </blockquote>
+
+                    <div class="cine-break__attr" data-r data-d="1">Roger Ebert</div>
+
+                    <div data-r data-d="2">
+                        <a class="btn" style="background:#fff;color:var(--orange);padding:1rem 2.6rem;font-size:.88rem;" href="/Account/Register">
+                            ◄ Fazer parte dessa história
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ═══════════════════════════════════ COMO TRABALHAMOS/FUNCIONA -->
+
+        <section class="hiw">
+
+            <div class="wrap">
+
+                <div class="hiw__head">
+                    <span class="pill" data-r>Como funciona</span>
+                    <h2 class="sec-title" data-r data-d="1">Simples.<br /><em>Rápido.</em><br />Poderoso.</h2>
+                    <p class="sec-sub" data-r data-d="2">Em menos de dois minutos você já está dentro da maior comunidade cinéfila do Brasil.</p>
+                </div>
+
+                <div class="hiw-grid">
+
+                    <div class="hiw-step" data-r>
+                        <div class="hiw-step__n">01</div>
+                        <h3 class="hiw-step__title">Crie sua conta</h3>
+                        <p class="hiw-step__text">Email ou Google. Trinta segundos. Sem cartão de crédito. Sem pegadinha.</p>
+                        <div class="hiw-step__bar"></div>
+                    </div>
+
+                    <div class="hiw-step" data-r data-d="1">
+                        <div class="hiw-step__n">02</div>
+                        <h3 class="hiw-step__title">Monte seu perfil</h3>
+                        <p class="hiw-step__text">Avalie filmes que já viu, defina seus gostos e siga pessoas com afinidade.</p>
+                        <div class="hiw-step__bar"></div>
+                    </div>
+
+                    <div class="hiw-step" data-r data-d="2">
+                        <div class="hiw-step__n">03</div>
+                        <h3 class="hiw-step__title">Descubra filmes</h3>
+                        <p class="hiw-step__text">Receba recomendações precisas, explore listas da comunidade e encontre joias escondidas.</p>
+                        <div class="hiw-step__bar"></div>
+                    </div>
+
+                    <div class="hiw-step" data-r data-d="3">
+                        <div class="hiw-step__n">04</div>
+                        <h3 class="hiw-step__title">Entre no papo</h3>
+                        <p class="hiw-step__text">Escreva resenhas, comente, debata. Seu acervo e sua voz num lugar só.</p>
+                        <div class="hiw-step__bar"></div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ═══════════════════════════════════════════ FAQ -->
+
+        <section class="faq" id="faq">
+            <div class="wrap">
+                <div class="faq__inner">
+                    <div class="faq__left">
+                        <div data-r>
+                            <span class="pill">FAQ</span>
+                            <h2 class="sec-title" data-d="1">Perguntas<br /><em>frequentes.</em></h2>
+                            <p class="sec-sub" data-d="2">Não achou o que precisava? Entre em contato: <strong>cinepapoweb@gmail.com</strong></p>
+                        </div>
+                    </div>
+
+                    <div class="faq-list">
+                        <div class="faq-it">
+                            <button class="faq-q">CinePapo é gratuito?<div class="faq-ico"><i class="ph ph-plus"></i></div></button>
+                            <div class="faq-a"><div class="faq-a__in">Sim! CinePapo é completamente gratuito. Não há planos premium por enquanto. Você tem acesso total a resenhas, listas, watchlists, avaliações e comunidade.</div></div>
+                        </div>
+
+                        <div class="faq-it">
+                            <button class="faq-q">De onde vêm os dados dos filmes?<div class="faq-ico"><i class="ph ph-plus"></i></div></button>
+                            <div class="faq-a"><div class="faq-a__in">Utilizamos a API do TMDB (The Movie Database), garantindo acervo atualizado com milhões de títulos, metadados completos e cobertura global de lançamentos.</div></div>
+                        </div>
+
+                        <div class="faq-it">
+                            <button class="faq-q">Como funciona o sistema de recomendação?<div class="faq-ico"><i class="ph ph-plus"></i></div></button>
+                            <div class="faq-a"><div class="faq-a__in">Nosso sistema combina quatro estratégias: (1) filmes similares aos que você amou, (2) mix de seus gêneros favoritos, (3) tendências globais para novatos, e (4) embaralhamento para um feed sempre fresco. Quanto mais você avalia, mais preciso fica.</div></div>
+                        </div>
+
+                        <div class="faq-it">
+                            <button class="faq-q">Existe aplicativo mobile?<div class="faq-ico"><i class="ph ph-plus"></i></div></button>
+                            <div class="faq-a"><div class="faq-a__in">Apps nativos iOS e Android estão em nossos planos, mas ainda não temos data de lançamento confirmada. A versão web já é totalmente responsiva e otimizada para mobile.</div></div>
+                        </div>
+
+                        <div class="faq-it">
+                            <button class="faq-q">Como funcionam os spoilers?<div class="faq-ico"><i class="ph ph-plus"></i></div></button>
+                            <div class="faq-a"><div class="faq-a__in">Você pode marcar sua resenha inteira como contendo spoilers. Os leitores verão um aviso claro antes de abrir, protegendo quem ainda não viu o filme.</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════ FINAL CTA -->
+
+        <section class="fcta">
+
+            <div class="wrap">
+
+                <div class="fcta__inner">
+
+                    <span class="pill" data-r>Comece hoje</span>
+
+                    <h2 class="fcta__title" data-r data-d="1">
+                        <span class="t-o">Entra</span><br />
+                        <span class="t-outline">no papo.</span>
+                    </h2>
+
+                    <div class="fcta__btns" data-r data-d="3">
+                        <a class="btn btn-orange" href="/Account/Register">◄ Criar conta grátis</a>
+                        <a class="btn btn-outline" href="/Account/Login">Já tenho conta</a>
+                    </div>
+
+                    <p class="fcta__note" data-r data-d="4">Gratuito · Sem cartão · Cancele quando quiser</p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════════════ FOOTER -->
+
+    <footer class="footer">
+
+        <div class="wrap">
+
+            <div class="footer__grid">
+
+                <div>
+
+                    <a href="/" class="nav__logo" aria-label="CinePapo">
+                        <img src="/img/logo_comprida.png" alt="CinePapo" />
+                    </a>
+
+                    <p class="footer__brand-text">A comunidade definitiva para quem leva cinema a sério. Critique, colecione, descubra, conecte.</p>
+
+                    <div class="footer__socials">
+                        <a href="#" class="footer__social" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    </div>
+
+                </div>
+
+                <div>
+                    <div class="footer__col-h">Plataforma</div>
+
+                    <ul class="footer__links">
+                        <li><a href="#">Funcionalidades</a></li>
+                        <li><a href="#">Descobrir filmes</a></li>
+                        <li><a href="#">Comunidade</a></li>
+                        <li><a href="#">Rankings</a></li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="footer__bottom">
+
+                <span class="footer__copy">© 2026 CinePapo. Todos os direitos reservados.</span>
+
+                <div class="tmdb-attr">
+                    <span class="tmdb-badge"><span class="tmdb-dot"></span>TMDB</span>
+                    <span>Este produto usa a API do TMDB, mas não é endossado nem certificado pelo TMDB.</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+    <script>
+
+        (function () {
+
+            'use strict';
+
+            /* ── Navbar  */
+
+            const nav = document.getElementById('nav');
+            window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 50), { passive: true });
+
+            const ro = new IntersectionObserver(entries => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); ro.unobserve(e.target); } });
+            }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+            document.querySelectorAll('[data-r]').forEach(el => ro.observe(el));
+
+            /* ── FAQ  */
+
+            document.querySelectorAll('.faq-q').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const it = btn.closest('.faq-it');
+                    const open = it.classList.contains('open');
+                    document.querySelectorAll('.faq-it').forEach(i => i.classList.remove('open'));
+                    if (!open) it.classList.add('open');
+                });
+
+            });
+
+            document.querySelectorAll('a[href^="#"]').forEach(a => {
+                a.addEventListener('click', e => {
+                    const t = document.querySelector(a.getAttribute('href'));
+                    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+                });
+
+            });
+
+            const feedEl = document.getElementById('liveFeed');
+
+            const acts = [
+                { who: 'Marina S.', what: 'avaliou', item: 'Fallen Leaves — ★★★★★' },
+                { who: 'Bruno L.',  what: 'adicionou à watchlist', item: 'Io Capitano' },
+                { who: 'Camila R.', what: 'resenhou', item: 'Monster (Kore-eda)' },
+                { who: 'Diego M.',  what: 'criou lista', item: '"Best of Scorsese"' },
+                { who: 'Sofia P.',  what: 'seguiu', item: 'Ana Clara Melo' },
+                { who: 'Lucas T.',  what: 'avaliou', item: 'The Zone of Interest — ★★★★' },
+            ];
+
+            let ai = 0;
+
+            if (feedEl) {
+
+                setInterval(() => {
+
+                    const a = acts[ai++ % acts.length];
+                    const el = document.createElement('div');
+                    el.className = 'lf-item';
+                    el.style.cssText = 'opacity:0;transform:translateX(-8px);transition:all .4s cubic-bezier(.16,1,.3,1)';
+                    el.innerHTML = `<div class="lf-dot"></div><div><div class="lf-text"><strong>${a.who}</strong> ${a.what} <strong>${a.item}</strong></div><div class="lf-time">agora mesmo</div></div>`;
+                    feedEl.prepend(el);
+                    requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'none'; });
+                    const all = feedEl.querySelectorAll('.lf-item');
+                    
+                    if (all.length > 4) {
+                        const last = all[all.length - 1];
+                        last.style.transition = 'opacity .3s';
+                        last.style.opacity = '0';
+                        setTimeout(() => last.remove(), 300);
+                    }
+
+                }, 3200);
+
+            }
+
+            window.addEventListener('load', () => {
+                if (!window.gsap || !window.ScrollTrigger) return;
+                gsap.registerPlugin(ScrollTrigger);
+                gsap.to('.hero__grid', {
+                    yPercent: 30,
+                    ease: 'none',
+                    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1 }
+                });
+
+                gsap.to('.hero__blob--1', {
+                    y: 80, ease: 'none',
+                    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1.5 }
+                });
+
+                gsap.to('.hero__blob--2', {
+                    y: -60, ease: 'none',
+                    scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 2 }
+                });
+
+                gsap.utils.toArray('.dm-cell').forEach((c, i) => {
+                    gsap.from(c, {
+                        opacity: 0, scale: .95,
+                        duration: .6, delay: i * .05,
+                        ease: 'power2.out',
+                        scrollTrigger: { trigger: '.disc__mosaic', start: 'top 80%', once: true }
+                    });
+
+                });
+
+            });
+
+        })();
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,99 @@
+﻿@{
+    ViewData["Title"] = "Comunidade - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var currentUser = ViewBag.CurrentUser as CinePapo.Models.User;
+    var reviews = ViewBag.FeedReviews as List<CinePapo.Models.Review>;
+    var authors = ViewBag.Authors as List<CinePapo.Models.User>;
+}
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col pb-24 bg-[#0a0a0a]">
+    
+    <header class="p-4 border-b border-white/10 flex items-center gap-4 sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md z-50">
+        <a href="javascript:history.back()" class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl text-white"></i>
+        </a>
+        <div>
+            <h1 class="font-display font-bold text-xl text-white leading-tight">Comunidade</h1>
+            <p class="text-[10px] text-gray-400">Resenhas mais recentes da plataforma</p>
+        </div>
+    </header>
+
+    <div class="px-5 py-6">
+        @if (reviews != null && reviews.Count > 0)
+        {
+            <div class="space-y-4">
+                @foreach (var review in reviews)
+                {
+                    var author = authors?.FirstOrDefault(a => a.Id == review.UserId);
+                    
+                    <div class="block relative bg-panel border border-white/5 rounded-2xl p-5 shadow-sm">
+                        
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                @if (author != null && !string.IsNullOrEmpty(author.ProfilePicture))
+                                {
+                                    <img src="@author.ProfilePicture" class="w-10 h-10 rounded-full object-cover border border-white/10">
+                                }
+                                else
+                                {
+                                    <div class="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center border border-brand/30">
+                                        <i class="ph-fill ph-user text-sm text-brand"></i>
+                                    </div>
+                                }
+                                <div>
+                                    <h3 class="font-bold text-white text-sm">@(author?.Name ?? "Usuário")</h3>
+                                    <p class="text-[10px] text-gray-500">@@@(author?.Username?.ToLower() ?? "usuario")</p>
+                                </div>
+                            </div>
+
+                            @if (currentUser != null && review.UserId != currentUser.Id)
+                            {
+                                bool isFollowing = currentUser.FollowingIds != null && currentUser.FollowingIds.Contains(review.UserId);
+                                if (isFollowing) { <button class="px-4 py-1.5 rounded-full border border-brand text-brand bg-transparent text-[10px] font-bold transition-colors hover:bg-brand/10">Seguindo</button> }
+                                else { <button class="px-4 py-1.5 rounded-full border border-brand bg-brand text-white text-[10px] font-bold transition-colors hover:bg-orange-600">Seguir</button> }
+                            }
+                        </div>
+
+                        <a href="/Review/Details/@review.Id" class="group block relative cursor-pointer">
+                            
+                            <div class="absolute top-0 right-0 w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand z-20 shadow-lg">
+                                <i class="ph-bold ph-arrows-out-simple"></i>
+                            </div>
+
+                            <div class="flex gap-4 mb-4">
+                                @if (!string.IsNullOrEmpty(review.PosterPath)) { <img src="https://image.tmdb.org/t/p/w200/@review.PosterPath" class="w-20 rounded-xl object-cover shadow-[0_8px_20px_rgba(0,0,0,0.5)] border border-white/5"> }
+                                else { <div class="w-20 h-28 bg-white/5 rounded-xl flex items-center justify-center border border-white/5"><i class="ph ph-film text-gray-500 text-2xl"></i></div> }
+
+                                <div class="flex flex-col justify-center flex-1">
+                                    <h3 class="font-bold text-white text-lg leading-tight mb-1 group-hover:text-brand transition-colors">@review.MovieTitle</h3>
+                                    <div class="flex gap-0.5 text-brand text-sm mb-2">
+                                        @for (int i = 1; i <= 5; i++) {
+                                            if (i <= review.Rating) { <i class="ph-fill ph-star"></i> }
+                                            else if (i - 0.5 <= review.Rating) { <i class="ph-fill ph-star-half"></i> }
+                                            else { <i class="ph ph-star text-gray-600"></i> }
+                                        }
+                                    </div>
+                                    <p class="text-xs text-gray-300 leading-relaxed line-clamp-2">@review.Content</p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <div class="flex items-center justify-between text-gray-500 border-t border-white/5 pt-3">
+                            <div class="flex gap-6">
+                                <div class="flex items-center gap-2 hover:text-white transition-colors cursor-pointer"><i class="ph ph-chat-circle text-lg"></i><span class="text-xs font-medium">0</span></div>
+                                <div class="flex items-center gap-2 hover:text-red-500 transition-colors cursor-pointer"><i class="ph ph-heart text-lg"></i><span class="text-xs font-medium">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="py-12 mt-4 text-center border-t border-white/5 flex flex-col items-center justify-center opacity-70">
+                <i class="ph-duotone ph-popcorn text-4xl text-brand mb-3"></i>
+                <h3 class="font-display font-bold text-white text-lg">Fim da fita! 🎞️</h3>
+                <p class="text-xs text-gray-500 mt-1 max-w-xs">Parece que você já maratonou todas as resenhas recentes da comunidade. Espere pelo próximo episódio (ou escreva a sua)!</p>
+            </div>
+        }
+    </div>
+</main>

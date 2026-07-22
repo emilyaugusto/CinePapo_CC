@@ -1,0 +1,264 @@
+﻿@model CinePapo.Models.Review
+@{
+    ViewData["Title"] = "Escrever Resenha - CinePapo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var preMovieId = ViewBag.PreMovieId as int?;
+    var preMovieTitle = ViewBag.PreMovieTitle as string;
+    var prePosterPath = ViewBag.PrePosterPath as string;
+}
+
+<main class="flex-1 w-full md:max-w-xl lg:max-w-2xl border-r border-white/10 min-h-screen flex flex-col pb-24 bg-[#0a0a0a]">
+
+    <header class="p-4 border-b border-white/10 flex items-center gap-4 sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-md z-50">
+        <a href="javascript:history.back()" class="w-10 h-10 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors">
+            <i class="ph-bold ph-arrow-left text-xl"></i>
+        </a>
+        <h1 class="font-display font-bold text-xl">Nova Resenha</h1>
+    </header>
+
+    <div class="p-6">
+        <form action="/Review/Create" method="post" class="space-y-6">
+
+            <div class="relative z-40">
+                <label class="block text-sm font-bold text-gray-400 mb-2">Qual filme você assistiu? <span class="text-brand">*</span></label>
+
+                <div class="relative">
+                    <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xl"></i>
+                    <input type="text" id="movieSearchInput" placeholder="Busque um filme..." autocomplete="off"
+                           class="w-full bg-panel border border-white/10 focus:border-brand rounded-2xl py-4 pl-12 pr-4 text-white outline-none transition-colors">
+
+                    <div id="selectedMovieCard" class="hidden absolute inset-0 bg-panel border border-brand rounded-2xl flex items-center gap-3 px-4 shadow-[0_0_15px_rgba(255,85,0,0.2)]">
+                        <img id="selectedMoviePoster" src="" class="w-8 h-10 rounded object-cover">
+                        <span id="selectedMovieTitle" class="font-bold text-white flex-1"></span>
+                        <button type="button" onclick="clearSelection()" class="text-gray-500 hover:text-red-500"><i class="ph-bold ph-x text-lg"></i></button>
+                    </div>
+                </div>
+
+                <div id="searchResults" class="absolute w-full mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden shadow-2xl hidden flex-col"></div>
+
+                <input type="hidden" name="MovieId" id="hiddenMovieId" value="0" />
+                <input type="hidden" name="MovieTitle" id="hiddenMovieTitle" />
+                <input type="hidden" name="PosterPath" id="hiddenPosterPath" />
+            </div>
+
+            <div class="relative z-30">
+                <label class="block text-sm font-bold text-gray-400 mb-2">Sua nota <span class="text-brand">*</span></label>
+                <div class="flex items-center gap-2" id="starContainer">
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="1"></i>
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="2"></i>
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="3"></i>
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="4"></i>
+                    <i class="ph-fill ph-star text-3xl text-gray-600 cursor-pointer hover:-translate-y-1 transition-transform" data-value="5"></i>
+                </div>
+                <input type="hidden" name="Rating" id="hiddenRating" value="0" />
+            </div>
+
+            <div class="relative z-20">
+                <div class="flex justify-between items-end mb-2">
+                    <label class="block text-sm font-bold text-gray-400">O que você achou? <span class="text-brand">*</span></label>
+                    <span id="charCount" class="text-[10px] text-gray-500">0 caracteres</span>
+                </div>
+
+                <textarea name="Content" id="reviewContent" rows="6"
+                          class="w-full bg-panel border border-white/10 focus:border-brand rounded-2xl p-4 text-white outline-none transition-colors resize-none"></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn" disabled
+                    class="w-full py-4 bg-brand text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2
+                           disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed disabled:shadow-none hover:bg-orange-600 shadow-[0_0_20px_rgba(255,85,0,0.2)]">
+                Publicar Resenha <i class="ph-bold ph-paper-plane-right"></i>
+            </button>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        const searchInput = document.getElementById('movieSearchInput');
+        const searchResults = document.getElementById('searchResults');
+        const hiddenMovieId = document.getElementById('hiddenMovieId');
+        const hiddenMovieTitle = document.getElementById('hiddenMovieTitle');
+        const hiddenPosterPath = document.getElementById('hiddenPosterPath');
+        const selectedCard = document.getElementById('selectedMovieCard');
+        const selectedPoster = document.getElementById('selectedMoviePoster');
+        const selectedTitle = document.getElementById('selectedMovieTitle');
+
+        const reviewContent = document.getElementById('reviewContent');
+        const submitBtn = document.getElementById('submitBtn');
+        const charCount = document.getElementById('charCount');
+        const hiddenRating = document.getElementById('hiddenRating');
+        const stars = document.querySelectorAll('#starContainer i');
+
+        // ==========================================
+        // 1. PLACEHOLDERS CRIATIVOS ALEATÓRIOS
+        // ==========================================
+        const creativePlaceholders = [
+            "A fotografia é espetacular, mas aquele final...",
+            "A atuação do protagonista me fez chorar quando...",
+            "Um clássico instantâneo! A cena em que...",
+            "Fui com altas expectativas e me surpreendi com...",
+            "O roteiro perde um pouco o ritmo na metade, mas...",
+            "A trilha sonora casou perfeitamente com o momento em que...",
+            "Achei a premissa genial, porém a execução deixou a desejar em...",
+            "A química entre os atores salvou o filme! Especialmente quando..."
+        ];
+
+        window.onload = function() {
+            // Sorteia frase
+            const randomIndex = Math.floor(Math.random() * creativePlaceholders.length);
+            reviewContent.placeholder = creativePlaceholders[randomIndex];
+
+            // Se veio da tela de detalhes, seleciona o filme sozinho
+            const preMovieId = @(preMovieId ?? 0);
+            const preMovieTitle = '@Html.Raw(preMovieTitle?.Replace("'", "\\'") ?? "")';
+            const prePosterPath = '@Html.Raw(prePosterPath?.Replace("'", "\\'") ?? "")';
+
+            if (preMovieId > 0 && preMovieTitle !== "") {
+                selectMovie(preMovieId, preMovieTitle, prePosterPath);
+            }
+        };
+
+        // ==========================================
+        // 2. SISTEMA DE ESTRELAS INTERATIVAS
+        // ==========================================
+        let currentRating = 0;
+
+        stars.forEach(star => {
+            star.addEventListener('mouseover', function() {
+                const value = this.getAttribute('data-value');
+                highlightStars(value);
+            });
+
+            star.addEventListener('mouseout', function() {
+                highlightStars(currentRating);
+            });
+
+            star.addEventListener('click', function() {
+                currentRating = this.getAttribute('data-value');
+                hiddenRating.value = currentRating;
+                highlightStars(currentRating);
+                checkFormValidity();
+            });
+        });
+
+        function highlightStars(count) {
+            stars.forEach(star => {
+                const starValue = star.getAttribute('data-value');
+                if (starValue <= count) {
+                    star.classList.remove('text-gray-600');
+                    star.classList.add('text-brand');
+                } else {
+                    star.classList.remove('text-brand');
+                    star.classList.add('text-gray-600');
+                }
+            });
+        }
+
+        // ==========================================
+        // 3. VALIDAÇÃO DO FORMULÁRIO (BLOQUEIO DE BOTÃO)
+        // ==========================================
+        function checkFormValidity() {
+            const isMovieSelected = parseInt(hiddenMovieId.value) > 0;
+            const isRatingGiven = parseInt(hiddenRating.value) > 0;
+            const contentText = reviewContent.value.trim();
+            const isContentValid = contentText.length > 0;
+
+            charCount.innerText = `${contentText.length} caracteres`;
+
+            if (isMovieSelected && isRatingGiven && isContentValid) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        reviewContent.addEventListener('input', checkFormValidity);
+
+        // ==========================================
+        // 4. LÓGICA DE BUSCA DE FILME
+        // ==========================================
+        let timeoutId;
+
+        searchInput.addEventListener('input', function (e) {
+            clearTimeout(timeoutId);
+            const query = e.target.value;
+
+            if (query.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            timeoutId = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/Review/SearchMovieAjax?query=${encodeURIComponent(query)}`);
+                    const movies = await response.json();
+
+                    searchResults.innerHTML = '';
+
+                    if (movies.length === 0) {
+                        searchResults.innerHTML = '<div class="p-4 text-sm text-gray-500 text-center">Nenhum filme encontrado.</div>';
+                    } else {
+                        movies.forEach(movie => {
+                            const year = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
+                            const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : '';
+
+                            const div = document.createElement('div');
+                            div.className = 'flex items-center gap-3 p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-0';
+
+                            div.innerHTML = `
+                                ${posterUrl ? `<img src="${posterUrl}" class="w-10 h-14 rounded object-cover">` : `<div class="w-10 h-14 bg-white/5 rounded flex items-center justify-center"><i class="ph ph-film text-gray-500"></i></div>`}
+                                <div>
+                                    <p class="font-bold text-sm text-white line-clamp-1">${movie.title}</p>
+                                    <p class="text-xs text-gray-500">${year}</p>
+                                </div>
+                            `;
+
+                            div.onclick = () => selectMovie(movie.id, movie.title, movie.poster_path);
+                            searchResults.appendChild(div);
+                        });
+                    }
+                    searchResults.classList.remove('hidden');
+                } catch (error) {
+                    console.error("Erro na busca", error);
+                }
+            }, 400);
+        });
+
+        function selectMovie(id, title, posterPath) {
+            hiddenMovieId.value = id;
+            hiddenMovieTitle.value = title;
+            hiddenPosterPath.value = posterPath || "";
+
+            selectedTitle.innerText = title;
+            if(posterPath) {
+                selectedPoster.src = `https://image.tmdb.org/t/p/w200${posterPath}`;
+                selectedPoster.classList.remove('hidden');
+            } else {
+                selectedPoster.classList.add('hidden');
+            }
+
+            selectedCard.classList.remove('hidden');
+            searchResults.classList.add('hidden');
+            searchInput.value = "";
+
+            checkFormValidity();
+        }
+
+        function clearSelection() {
+            hiddenMovieId.value = "0";
+            hiddenMovieTitle.value = "";
+            hiddenPosterPath.value = "";
+            selectedCard.classList.add('hidden');
+            searchInput.focus();
+
+            checkFormValidity();
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+    </script>
+}
