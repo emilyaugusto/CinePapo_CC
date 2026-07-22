@@ -1,8 +1,12 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/emilyaugusto/CinePapo-Portfolio/master/SaaSDocumentacao/wwwroot/img/capa_topo.png" alt="Capa" width="100%">
+</p>
+
 # 🍿 CinePapo
 
 O CinePapo é uma rede social feita de fãs para fãs de cinema! Este web app foi desenvolvido para ser o espaço definitivo para dar notas, criar listas de favoritos, receber recomendações e debater filmes. Criado como um desafio de desenvolvimento concluído em 3 meses, o projeto foca totalmente na experiência do usuário.
 
-## ✨ Funcionalidades
+## Funcionalidades
 
 * **Sistema de Avaliações:** Dê notas e escreva resenhas completas sobre os filmes que assistiu.
 * **Listas Personalizadas:** Organize seu diário cinematográfico separando filmes em "Visto", "Quero Ver" e "Favoritos".
@@ -10,7 +14,7 @@ O CinePapo é uma rede social feita de fãs para fãs de cinema! Este web app fo
 * **Login Seguro e Rápido:** Autenticação integrada diretamente com a sua conta do Google.
 * **Catálogo Rico:** Dados, capas e sinopses em tempo real puxados da API do TMDB.
 
-## 🚀 Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 * **Back-end:** C# com ASP.NET Core MVC
 * **Banco de Dados:** MongoDB (NoSQL)
@@ -18,10 +22,10 @@ O CinePapo é uma rede social feita de fãs para fãs de cinema! Este web app fo
 * **Integrações:** API do TMDB
 * **Deploy/Hospedagem:** Railway
 
-## 💻 Como rodar o projeto localmente
+## Como rodar o projeto localmente
 
 1. Faça o clone deste repositório para a sua máquina:
-   git clone https://github.com/SEU_USUARIO/CinePapo-Portfolio.git
+   git clone https://github.com/emilyaugusto/CinePapo-Portfolio.git
 
 2. Abra o terminal na pasta do projeto e restaure as dependências do .NET:
    dotnet restore
@@ -40,3 +44,7 @@ O CinePapo é uma rede social feita de fãs para fãs de cinema! Este web app fo
 
 * Desenvolvido por Emily Augusto e Thiago Freitas.
 * Orientação do professor Wanderlei.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/emilyaugusto/CinePapo-Portfolio/master/SaaSDocumentacao/wwwroot/img/Footer%201.png" alt="Footer" width="100%">
+</p>
