@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/emilyaugusto/CinePapo-Portfolio/master/SaaSDocumentacao/wwwroot/img/capa_topo.png" alt="Capa" width="100%">
+  <img src="https://raw.githubusercontent.com/emilyaugusto/CinePapo-Portfolio/master/CinePapo/wwwroot/img/capa_topo.png" alt="Capa" width="100%">
 </p>
 
 # 🍿 CinePapo
@@ -46,5 +46,5 @@ O CinePapo é uma rede social feita de fãs para fãs de cinema! Este web app fo
 * Orientação do professor Wanderlei.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/emilyaugusto/CinePapo-Portfolio/master/SaaSDocumentacao/wwwroot/img/Footer%201.png" alt="Footer" width="100%">
+  <img src="https://raw.githubusercontent.com/emilyaugusto/CinePapo-Portfolio/master/CinePapo/wwwroot/img/Footer%201.png" alt="Footer" width="100%">
 </p>
